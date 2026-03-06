@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<script>window.onerror=function(m){document.body.innerHTML='<pre style="color:red;padding:20px">'+m+'</pre>';}</script>
 
 <html lang="tr">
 <head>
@@ -41,14 +40,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   will-change:transform;
   box-shadow:0 2px 8px rgba(0,0,0,.10), 0 8px 24px rgba(0,0,0,.10);
 }
-/* Noise texture overlay — canvas ile üretilir, JS inject eder */
+/* Noise texture overlay -- canvas ile üretilir, JS inject eder */
 .gc .noise-layer{
   position:absolute;inset:0;pointer-events:none;border-radius:20px;
   opacity:0.05;mix-blend-mode:multiply;z-index:2;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:200px 200px;
 }
-/* Gradient — üstten ışık, alttan gölge */
+/* Gradient -- üstten ışık, alttan gölge */
 .gc::after{
   content:'';position:absolute;inset:0;pointer-events:none;border-radius:18px;z-index:3;
   background:linear-gradient(
@@ -59,7 +58,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     rgba(0,0,0,.12) 100%
   );
 }
-/* İnset shadow — dokunsal derinlik */
+/* İnset shadow -- dokunsal derinlik */
 .gc::before{
   content:'';position:absolute;inset:0;pointer-events:none;border-radius:18px;z-index:4;
   box-shadow:
@@ -178,11 +177,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .pval{font-size:10px;color:var(--mu)}
 .parr{font-size:11px;color:#C0C0CC}
 .psect{font-family:'Syne',sans-serif;font-size:7.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C0C0CC;padding:8px 4px 4px}
-/* MODAL — exact reference paper style */
+/* MODAL -- exact reference paper style */
 
 .mbox{width:100%;max-width:480px;background:#fff;border-radius:22px;max-height:90vh;display:flex;flex-direction:column;opacity:0;transform:scale(.93) translateY(16px);transition:opacity .24s,transform .24s cubic-bezier(.34,1.3,.64,1);box-shadow:0 24px 72px rgba(30,30,80,.18),0 4px 20px rgba(0,0,0,.1);overflow:hidden}
 .mbd.on .mbox{opacity:1;transform:scale(1) translateY(0)}
-/* Modal header — reference: back arrow | Title | icons */
+/* Modal header – reference: back arrow | Title | icons */
 .mhd{padding:18px 18px 0;flex-shrink:0}
 .mhd-top{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid #EEEEEE}
 .mhd-back{display:flex;align-items:center;justify-content:center;font-size:18px;color:#888;cursor:pointer;flex-shrink:0;width:28px}
@@ -205,17 +204,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .mpsrb.ab{color:#5B52F0;background:rgba(91,82,240,.08)}
 /* scrollable body */
 .mbd2{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;background:#fff}
-/* TO DO section — reference style */
+/* TO DO section – reference style */
 .m-section{padding:16px 18px 0}
 .m-sec-title{font-family:‘DM Sans’,sans-serif;font-size:16px;font-weight:700;color:#1A1A2E;margin-bottom:12px}
 .tks{display:flex;flex-direction:column;border-top:1px solid #F0F0F0}
 .tr{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #F0F0F0;cursor:pointer}
 .tr:active{opacity:.8}
-/* Green checkbox — reference */
+/* Green checkbox – reference */
 .tb2{width:22px;height:22px;border-radius:6px;border:2px solid #D0D0E0;display:flex;align-items:center;justify-content:center;font-size:13px;background:#fff;transition:all .16s;flex-shrink:0}
 .tb2.dn{background:#1A9955;border-color:#1A9955;color:#fff}
 .tl{font-size:14px;color:#1A1A2E;transition:all .16s;flex:1;font-family:‘DM Sans’,sans-serif}.tl.dn{color:#BBBBCC;text-decoration:line-through}
-/* Add subtask — reference bordered box */
+/* Add subtask – reference bordered box */
 .tadd-wrap{margin:10px 0 4px;border:1.5px solid #E8E8F2;border-radius:10px;display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;background:#FAFAFE}
 .tadd-wrap:active{background:#F0F0F8}
 .tadd-plus2{font-size:18px;color:#1A9955;font-weight:700;flex-shrink:0;line-height:1}
@@ -232,7 +231,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .mreason{background:#F5F5FF;border:1px solid #E0E0F0;border-radius:12px;padding:10px 12px;display:flex;gap:8px;margin:0 18px 16px}
 .mr-orb{width:14px;height:14px;border-radius:50%;background:conic-gradient(#5B52F0 0deg,#F09050 360deg);flex-shrink:0;margin-top:2px}
 .mr-t{font-size:10px;color:#7777AA;line-height:1.5}.mr-t b{color:#5B52F0;font-weight:600}
-/* FORMATTING TOOLBAR — reference style */
+/* FORMATTING TOOLBAR – reference style */
 .ntbar{display:flex;align-items:center;gap:1px;padding:6px 10px;border-top:1px solid #EEEEEE;background:#FAFAFA;flex-shrink:0;overflow-x:auto}
 .ntbar::-webkit-scrollbar{display:none}
 .ntb{min-width:36px;height:36px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#555566;font-family:‘DM Sans’,sans-serif;font-weight:600;flex-shrink:0;padding:0 2px;transition:background .14s}
@@ -824,8 +823,8 @@ function gcol(k){const g=GD[k];if(g.st===‘bloke’)return’#D4956A’;if(g.st
 function gtxt(k){const g=GD[k];if(g.st===‘bloke’||g.st===‘tamamlandı’)return’rgba(0,0,0,.72)’;return PTXT[g.pri];}
 
 // ═══════════════════════════════════════════
-// GRID ENGINE v4 — SERBEST YERLEŞİM
-// Her grid: {key, x, y, w, h} — piksel cinsinden, bağımsız
+// GRID ENGINE v4 – SERBEST YERLEŞİM
+// Her grid: {key, x, y, w, h} – piksel cinsinden, bağımsız
 // Sürükle → taşı, köşeden çek → boyutlandır
 // Birbirinden tamamen bağımsız, örtüşebilir
 // ═══════════════════════════════════════════
@@ -834,7 +833,7 @@ const GAP = 2;
 const MIN_W = 80;   // min genişlik px
 const MIN_H = 70;   // min yükseklik px
 
-// Başlangıç layout — yüzde bazlı tanım, init’te px’e çevrilir
+// Başlangıç layout – yüzde bazlı tanım, init’te px’e çevrilir
 // [key, x%, y%, w%, h%]
 const LAYOUT_DEF = [
 [‘mobilya’,  0,   0,  58,  31],
@@ -847,7 +846,7 @@ const LAYOUT_DEF = [
 ];
 
 // ═══════════════════════════════════════════
-// KALICI VERİ — localStorage
+// KALICI VERİ – localStorage
 // ═══════════════════════════════════════════
 const STORE_KEY = ‘inner_v9_data’;
 
@@ -956,7 +955,7 @@ function activeL(){ return ITEMS.filter(i=>!shelfKeys.includes(i.key)); }
 let L = ITEMS; // compat
 
 // ─────────────────────────────────────────
-// INIT — ilk açılışta % → px
+// INIT – ilk açılışta % → px
 // ─────────────────────────────────────────
 function initLayout(){
 const wrap = document.getElementById(‘grid-wrap’);
@@ -1030,7 +1029,7 @@ nl.className = 'noise-layer';
 el.appendChild(nl);
 
 if(editMode){
-  // Resize handle — merkeze bakan köşe
+  // Resize handle -- merkeze bakan köşe
   const cx = item.x + item.w/2;
   const cy = item.y + item.h/2;
   const midX = W/2, midY = H/2;
@@ -1141,7 +1140,7 @@ return `
 // ─────────────────────────────────────────
 
 // ─────────────────────────────────────────
-// SNAP — drag bırakınca çakışan grid’lerle yer değiştir
+// SNAP – drag bırakınca çakışan grid’lerle yer değiştir
 // ─────────────────────────────────────────
 function snapToGrid(dragged){
 const wrap = document.getElementById(‘grid-wrap’);
@@ -1244,7 +1243,7 @@ openM(item.key);
 }
 
 // ─────────────────────────────────────────
-// RESIZE — köşeden sürükle
+// RESIZE – köşeden sürükle
 // ─────────────────────────────────────────
 function attachResize(rh, item){
 rh.addEventListener(‘touchstart’,e=>{
@@ -1297,10 +1296,10 @@ const nw = Math.max(MIN_W, rs.ow-dx);
 item.x = Math.min(rs.ox+rs.ow-MIN_W, Math.max(0, rs.ox+dx));
 item.w = nw;
 }
-// Alt kenar: br, bl, b — h <= w zorunlu
+// Alt kenar: br, bl, b – h <= w zorunlu
 if(p===‘br’||p===‘bl’||p===‘b’)
 item.h = Math.max(MIN_H, Math.min(item.w, Math.min(H-rs.oy, rs.oh+dy)));
-// Üst kenar: tr, tl, t — h <= w zorunlu
+// Üst kenar: tr, tl, t – h <= w zorunlu
 if(p===‘tr’||p===‘tl’||p===‘t’){
 const nh = Math.max(MIN_H, Math.min(item.w, rs.oh-dy));
 item.y = Math.min(rs.oy+rs.oh-MIN_H, Math.max(0, rs.oy+dy));
@@ -1325,7 +1324,7 @@ toast(‘↔ Boyutlandırıldı’);
 });
 
 // ─────────────────────────────────────────
-// SMART FILL — resize bittikten sonra
+// SMART FILL – resize bittikten sonra
 // Komşu grid’leri uzat ama çarpışma kontrolü yap
 // ─────────────────────────────────────────
 function smartFill(rs){
@@ -1476,7 +1475,7 @@ areas[i.key] += share*0.5; // yarısını ver, abartma
 // Tekrar pack
 packByOrder(order, areas, W, H, active);
 
-// Kırp — wrap dışına taşanları sınırla
+// Kırp – wrap dışına taşanları sınırla
 active.forEach(i=>{
 i.x = Math.max(0, i.x);
 i.y = Math.max(0, i.y);
@@ -1527,7 +1526,7 @@ if(el) el.textContent=Math.floor(timerSec/60).toString().padStart(2,‘0’)+’
 },1000);
 }
 
-// setPri — renk/öncelik değiştir
+// setPri – renk/öncelik değiştir
 function setPri(k,p){
 GD[k].pri=p;
 toast(`✅ ${GD[k].title} → ${p}`);
@@ -1553,7 +1552,7 @@ renderGrid();
 toast(`✅ ${GD[k].title} geri getirildi`);
 }
 
-// noise texture — canvas ile
+// noise texture – canvas ile
 function generateNoiseTexture(){
 const size=128;
 const canvas=document.createElement(‘canvas’);
@@ -1578,7 +1577,7 @@ document.documentElement.style.setProperty(’–noise-url’,`url(${canvas.toDa
 }
 
 // ═══════════════════════════════════════════
-// MODAL — Accordion
+// MODAL – Accordion
 // ═══════════════════════════════════════════
 let curK=null;
 
@@ -1605,7 +1604,7 @@ const col = priColors[g.pri]||’#8888AA’;
 priEl.style.background = col+‘22’;
 priEl.style.color = col;
 priEl.textContent = ’● ’ + (priLabels[g.pri]||‘P1’);
-// Color band — grid rengi
+// Color band – grid rengi
 const band = document.getElementById(‘m-color-band’);
 if(band) band.style.background = GCOLS[k] || ‘#4A47E8’;
 // Aç
