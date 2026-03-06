@@ -1,1 +1,2148 @@
-<h1>test</h1>
+<!DOCTYPE html>
+
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>INNER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#EDEAE4;--card:#fff;--tx:#1A1A2E;--mu:#8888A8;--bd:rgba(0,0,0,.08);--ac:#5B52F0;--ac2:#F09050;--ac3:#50D0A0;--paper:#FAFAFA}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;touch-action:none}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.sb{display:flex;justify-content:space-between;align-items:center;padding:12px 18px 2px;font-size:12px;font-weight:700;flex-shrink:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 14px 6px;flex-shrink:0;gap:8px}
+.avatar{width:34px;height:34px;border-radius:50%;background:#C8D4F4;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0}
+.avatar:active{opacity:.7}
+.logo{display:flex;align-items:center;gap:6px;flex:1;justify-content:center}
+.ring{width:20px;height:20px;border-radius:50%;background:conic-gradient(#5B52F0 0deg,#F09050 120deg,#50D0A0 240deg,#5B52F0 360deg);flex-shrink:0}
+.logo-t{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:.07em}
+.edit-pill{min-width:0;padding:6px 10px;font-size:16px;height:30px;padding:0 12px;border-radius:15px;background:rgba(91,82,240,.1);border:1.5px solid rgba(91,82,240,.2);font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:var(--ac);cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
+.edit-pill.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.edit-pill:active{opacity:.8}
+.filters{display:flex;gap:5px;padding:0 12px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0}
+.filters::-webkit-scrollbar{display:none}
+.ftag{padding:4px 11px;border-radius:14px;font-family:'Syne',sans-serif;font-size:8.5px;font-weight:700;border:1.5px solid #E0E0EA;background:var(--card);color:var(--mu);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.ftag.on{background:rgba(91,82,240,.1);border-color:rgba(91,82,240,.3);color:var(--ac)}
+#grid-wrap{flex:1;position:relative;margin:0 10px;overflow:hidden;min-height:0}
+/* GRID CARD */
+.gc{
+  position:absolute;border-radius:20px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;
+  cursor:pointer;touch-action:none;
+  -webkit-user-select:none;user-select:none;
+  will-change:transform;
+  box-shadow:0 2px 8px rgba(0,0,0,.10), 0 8px 24px rgba(0,0,0,.10);
+}
+/* Noise texture overlay — canvas ile üretilir, JS inject eder */
+.gc .noise-layer{
+  position:absolute;inset:0;pointer-events:none;border-radius:20px;
+  opacity:0.05;mix-blend-mode:multiply;z-index:2;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+/* Gradient — üstten ışık, alttan gölge */
+.gc::after{
+  content:'';position:absolute;inset:0;pointer-events:none;border-radius:18px;z-index:3;
+  background:linear-gradient(
+    165deg,
+    rgba(255,255,255,.22) 0%,
+    rgba(255,255,255,.06) 35%,
+    rgba(0,0,0,0) 55%,
+    rgba(0,0,0,.12) 100%
+  );
+}
+/* İnset shadow — dokunsal derinlik */
+.gc::before{
+  content:'';position:absolute;inset:0;pointer-events:none;border-radius:18px;z-index:4;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -3px 8px rgba(0,0,0,.18),
+    inset 3px 0 8px rgba(0,0,0,.07),
+    inset -3px 0 8px rgba(0,0,0,.07);
+}
+.gc.anim{transition:left .28s cubic-bezier(.4,0,.2,1),top .28s cubic-bezier(.4,0,.2,1),width .28s cubic-bezier(.4,0,.2,1),height .28s cubic-bezier(.4,0,.2,1)}
+.gc.jiggle{animation:jig .22s infinite alternate}
+@keyframes jig{from{transform:rotate(-.6deg)}to{transform:rotate(.6deg)}}
+.gc.dragging{opacity:.9;z-index:60;box-shadow:0 16px 48px rgba(0,0,0,.22);animation:none;transition:none}
+/* resize handle */
+/* Köşe handle */
+.rh{position:absolute;width:44px;height:44px;display:none;z-index:10;touch-action:none}
+.gc.edit-on .rh{display:block}
+.rh::before,.rh::after{content:'';position:absolute;background:rgba(255,255,255,.75);border-radius:2px}
+.rh[data-pos="br"]{bottom:0;right:0;cursor:se-resize}
+.rh[data-pos="br"]::before{width:14px;height:3px;bottom:10px;right:6px}
+.rh[data-pos="br"]::after{width:3px;height:14px;bottom:6px;right:10px}
+.rh[data-pos="bl"]{bottom:0;left:0;cursor:sw-resize}
+.rh[data-pos="bl"]::before{width:14px;height:3px;bottom:10px;left:6px}
+.rh[data-pos="bl"]::after{width:3px;height:14px;bottom:6px;left:10px}
+.rh[data-pos="tr"]{top:0;right:0;cursor:ne-resize}
+.rh[data-pos="tr"]::before{width:14px;height:3px;top:10px;right:6px}
+.rh[data-pos="tr"]::after{width:3px;height:14px;top:6px;right:10px}
+.rh[data-pos="tl"]{top:0;left:0;cursor:nw-resize}
+.rh[data-pos="tl"]::before{width:14px;height:3px;top:10px;left:6px}
+.rh[data-pos="tl"]::after{width:3px;height:14px;top:6px;left:10px}
+/* Kenar handle'ları */
+.rh-edge{position:absolute;display:none;z-index:10;touch-action:none;background:transparent}
+.gc.edit-on .rh-edge{display:block}
+.rh-edge[data-pos="t"],.rh-edge[data-pos="b"]{left:44px;right:44px;height:20px;cursor:ns-resize}
+.rh-edge[data-pos="l"],.rh-edge[data-pos="r"]{top:44px;bottom:44px;width:20px;cursor:ew-resize}
+.rh-edge[data-pos="t"]{top:0}
+.rh-edge[data-pos="b"]{bottom:0}
+.rh-edge[data-pos="l"]{left:0}
+.rh-edge[data-pos="r"]{right:0}
+/* Kenar çizgisi göstergesi */
+.rh-edge::after{content:'';position:absolute;background:rgba(255,255,255,.5);border-radius:2px}
+.rh-edge[data-pos="t"]::after,.rh-edge[data-pos="b"]::after{left:50%;transform:translateX(-50%);width:30px;height:3px;top:50%;margin-top:-1px}
+.rh-edge[data-pos="l"]::after,.rh-edge[data-pos="r"]::after{top:50%;transform:translateY(-50%);height:30px;width:3px;left:50%;margin-left:-1px}
+/* grid text */
+.gl{font-size:6.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;opacity:.75;font-family:'Syne',sans-serif;white-space:nowrap;overflow:hidden}
+.gt{font-family:'Syne',sans-serif;font-weight:800;line-height:1.1;overflow:hidden}
+.gs{font-size:7px;opacity:.5;overflow:hidden;white-space:nowrap}
+.gn{font-family:'Syne',sans-serif;font-weight:800;line-height:1}
+.gpb{width:100%;height:3px;background:rgba(0,0,0,.12);border-radius:2px;overflow:hidden;margin:3px 0 2px}
+.gpbf{height:100%;border-radius:2px;background:rgba(0,0,0,.22);transition:width .4s}
+.gtmr{font-family:'Syne',sans-serif;font-weight:800;letter-spacing:-.02em;line-height:1}
+.gplay{position:absolute;top:9px;right:9px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:8px}
+.gbdg{display:inline-flex;align-items:center;padding:2px 6px;border-radius:9px;font-size:6px;font-weight:700;font-family:'Syne',sans-serif;background:rgba(0,0,0,.12)}
+/* AI bubble */
+.aib{flex-shrink:0;margin:5px 10px;background:var(--card);border:1px solid rgba(91,82,240,.18);border-radius:14px;padding:9px 12px;display:flex;align-items:center;gap:9px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.orb{width:24px;height:24px;border-radius:50%;background:conic-gradient(#5B52F0 0deg,#F09050 180deg,#50D0A0 360deg);flex-shrink:0}
+.aibm{flex:1;font-size:9.5px;color:#666;line-height:1.4}.aibm b{color:var(--tx);font-weight:600}
+.aicb{width:28px;height:28px;border-radius:50%;background:rgba(91,82,240,.1);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0}
+.aicb:active{background:rgba(91,82,240,.22)}
+/* BOTTOM NAV */
+.bnav-wrap{flex-shrink:0;display:flex;justify-content:center;align-items:center;padding:5px 12px 26px;gap:8px}
+.nav-circle{width:48px;height:48px;border-radius:50%;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.1);flex-shrink:0;position:relative}
+.nav-circle:active{opacity:.7}
+.bnav{height:54px;background:var(--card);border:1px solid var(--bd);border-radius:27px;display:flex;align-items:center;padding:0 6px;gap:2px;box-shadow:0 4px 18px rgba(0,0,0,.1);flex:1;max-width:280px}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 4px;border-radius:18px;cursor:pointer;gap:1px}
+.bni.act{background:rgba(91,82,240,.1)}
+.bni:active{background:rgba(0,0,0,.04)}
+.bni-ic{font-size:17px;line-height:1}
+.bni-lb{font-family:'Syne',sans-serif;font-size:7px;font-weight:700;color:var(--mu)}
+.bni.act .bni-lb{color:var(--ac)}
+.bni-dot{width:3px;height:3px;border-radius:50%;background:var(--ac);margin-top:1px}
+.nbadge{position:absolute;top:-2px;right:-2px;min-width:14px;height:14px;background:#F05050;color:#fff;border-radius:7px;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px;font-family:'Syne',sans-serif}
+/* PAGES */
+.page{
+  position:fixed;inset:0;z-index:100;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+.page.show{transform:translateX(0);}
+.page.back{transform:translateX(-30%);}
+.ph{display:flex;align-items:center;gap:10px;padding:52px 16px 12px;flex-shrink:0;background:var(--card);border-bottom:1px solid var(--bd)}
+.bk{width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0}
+.bk:active{opacity:.7}
+.pt{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}
+.pb2{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+/* RAF */
+.dtabs{display:flex;gap:5px;padding:10px 14px 8px;overflow-x:auto;flex-shrink:0}
+.dtab{padding:5px 12px;border-radius:14px;white-space:nowrap;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;border:1.5px solid #E0E0E8;background:var(--card);color:var(--mu);cursor:pointer;flex-shrink:0}
+.dtab.on{background:rgba(91,82,240,.1);border-color:rgba(91,82,240,.3);color:var(--ac)}
+.rlist{padding:0 14px 20px;display:flex;flex-direction:column;gap:7px}
+.rc{background:var(--card);border:1px solid #EBEBF0;border-radius:14px;padding:12px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.rci{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.rcb{flex:1}.rct{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.rcd{font-size:9px;color:var(--mu);line-height:1.4}
+.rcm{display:flex;gap:6px;margin-top:5px;align-items:center}
+.rca{font-size:8px;padding:3px 8px;border-radius:6px;background:rgba(91,82,240,.09);color:var(--ac);border:1px solid rgba(91,82,240,.2);font-family:'Syne',sans-serif;font-weight:700;cursor:pointer}
+.rca:active{background:rgba(91,82,240,.18)}
+/* TAKVIM */
+.cal-day{background:var(--card);margin:0 14px 8px;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.cdh{padding:10px 14px 6px;font-family:'Syne',sans-serif;font-size:9.5px;font-weight:700;color:var(--ac);border-bottom:1px solid #F0F0F5}
+.ci2{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #F5F5FA}
+.ci2:last-child{border-bottom:none}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ctt{font-size:12px;font-weight:500;flex:1}
+.ctm{font-family:'Syne',sans-serif;font-size:8.5px;color:var(--mu);font-weight:700}
+/* PROFİL */
+.psec{margin:0 14px 10px}
+.prow{background:var(--card);border-radius:14px;overflow:hidden;border:1px solid #EBEBF0}
+.pitem{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid #F5F5FA;cursor:pointer}
+.pitem:last-child{border-bottom:none}
+.pitem:active{background:#F8F8FA}
+.pic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.plb{font-size:13px;font-weight:500;flex:1}
+.pval{font-size:10px;color:var(--mu)}
+.parr{font-size:11px;color:#C0C0CC}
+.psect{font-family:'Syne',sans-serif;font-size:7.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C0C0CC;padding:8px 4px 4px}
+/* MODAL — exact reference paper style */
+
+.mbox{width:100%;max-width:480px;background:#fff;border-radius:22px;max-height:90vh;display:flex;flex-direction:column;opacity:0;transform:scale(.93) translateY(16px);transition:opacity .24s,transform .24s cubic-bezier(.34,1.3,.64,1);box-shadow:0 24px 72px rgba(30,30,80,.18),0 4px 20px rgba(0,0,0,.1);overflow:hidden}
+.mbd.on .mbox{opacity:1;transform:scale(1) translateY(0)}
+/* Modal header — reference: back arrow | Title | icons */
+.mhd{padding:18px 18px 0;flex-shrink:0}
+.mhd-top{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid #EEEEEE}
+.mhd-back{display:flex;align-items:center;justify-content:center;font-size:18px;color:#888;cursor:pointer;flex-shrink:0;width:28px}
+.mhd-back:active{opacity:.6}
+.mtinp{font-family:‘DM Sans’,sans-serif;font-size:20px;font-weight:700;border:none;outline:none;background:transparent;flex:1;color:#1A1A2E;letter-spacing:-.01em}
+.mhd-icons{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.mhd-ic{width:34px;height:34px;border-radius:50%;background:#F2F2F8;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;border:1px solid #E8E8F0}
+.mhd-ic:active{background:#E4E4F0}
+.mhd-ic.close-ic{background:#F2F2F2;border-color:#E0E0E0;font-size:13px;font-weight:600;color:#666}
+/* priority+status compact */
+.mpsr{display:flex;gap:8px;padding:12px 18px;flex-shrink:0;border-bottom:1px solid #F0F0F5}
+.mpsrg{flex:1;background:#F7F7FC;border:1.5px solid #E8E8F2;border-radius:10px;overflow:hidden}
+.mpsrh{padding:5px 9px 0;font-family:‘DM Sans’,sans-serif;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#AAAACC}
+.mpsrbs{display:flex}
+.mpsrb{flex:1;padding:5px 2px;text-align:center;font-family:‘DM Sans’,sans-serif;font-size:11px;font-weight:600;color:#C0C0CC;cursor:pointer;transition:all .13s}
+.mpsrb:active{opacity:.6}
+.mpsrb.ar{color:#CC3333;background:rgba(200,48,48,.07)}
+.mpsrb.ag{color:#1A9955;background:rgba(26,153,85,.07)}
+.mpsrb.aw{color:#997700;background:rgba(180,120,0,.07)}
+.mpsrb.ab{color:#5B52F0;background:rgba(91,82,240,.08)}
+/* scrollable body */
+.mbd2{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;background:#fff}
+/* TO DO section — reference style */
+.m-section{padding:16px 18px 0}
+.m-sec-title{font-family:‘DM Sans’,sans-serif;font-size:16px;font-weight:700;color:#1A1A2E;margin-bottom:12px}
+.tks{display:flex;flex-direction:column;border-top:1px solid #F0F0F0}
+.tr{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #F0F0F0;cursor:pointer}
+.tr:active{opacity:.8}
+/* Green checkbox — reference */
+.tb2{width:22px;height:22px;border-radius:6px;border:2px solid #D0D0E0;display:flex;align-items:center;justify-content:center;font-size:13px;background:#fff;transition:all .16s;flex-shrink:0}
+.tb2.dn{background:#1A9955;border-color:#1A9955;color:#fff}
+.tl{font-size:14px;color:#1A1A2E;transition:all .16s;flex:1;font-family:‘DM Sans’,sans-serif}.tl.dn{color:#BBBBCC;text-decoration:line-through}
+/* Add subtask — reference bordered box */
+.tadd-wrap{margin:10px 0 4px;border:1.5px solid #E8E8F2;border-radius:10px;display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;background:#FAFAFE}
+.tadd-wrap:active{background:#F0F0F8}
+.tadd-plus2{font-size:18px;color:#1A9955;font-weight:700;flex-shrink:0;line-height:1}
+.tadd-lbl{font-size:13.5px;color:#AAAACC;font-family:‘DM Sans’,sans-serif}
+/* NOTES section */
+.note-area{outline:none;font-size:13.5px;line-height:1.75;color:#1A1A2E;background:transparent;font-family:‘DM Sans’,sans-serif;word-break:break-word;min-height:80px;padding-bottom:12px}
+.note-area:empty::before{content:attr(data-ph);color:#C0C0CC;pointer-events:none}
+.note-area ul{padding-left:20px;list-style:disc}.note-area ol{padding-left:20px}
+.note-area li{margin-bottom:3px}
+.note-area b,.note-area strong{font-weight:700;color:#1A1A2E}
+.note-area h3{font-size:15px;font-weight:700;margin:6px 0 3px;color:#1A1A2E}
+.note-area blockquote{border-left:3px solid #D0D0E8;padding-left:10px;color:#888;margin:4px 0;font-style:italic}
+/* AI reason */
+.mreason{background:#F5F5FF;border:1px solid #E0E0F0;border-radius:12px;padding:10px 12px;display:flex;gap:8px;margin:0 18px 16px}
+.mr-orb{width:14px;height:14px;border-radius:50%;background:conic-gradient(#5B52F0 0deg,#F09050 360deg);flex-shrink:0;margin-top:2px}
+.mr-t{font-size:10px;color:#7777AA;line-height:1.5}.mr-t b{color:#5B52F0;font-weight:600}
+/* FORMATTING TOOLBAR — reference style */
+.ntbar{display:flex;align-items:center;gap:1px;padding:6px 10px;border-top:1px solid #EEEEEE;background:#FAFAFA;flex-shrink:0;overflow-x:auto}
+.ntbar::-webkit-scrollbar{display:none}
+.ntb{min-width:36px;height:36px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#555566;font-family:‘DM Sans’,sans-serif;font-weight:600;flex-shrink:0;padding:0 2px;transition:background .14s}
+.ntb:active,.ntb:focus{background:#EEEEF8;color:#5B52F0;outline:none}
+.ntb-sep{width:1px;height:22px;background:#E4E4EE;margin:0 4px;flex-shrink:0}
+/* AI PAGE */
+.ai-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;background:var(–bg)}
+.cm{display:flex;gap:8px;align-items:flex-start}.cm.u{flex-direction:row-reverse}
+.cb{max-width:78%;padding:10px 13px;border-radius:18px;font-size:12.5px;line-height:1.5}
+.cm.ai .cb{background:var(–card);border-radius:4px 18px 18px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.cm.u .cb{background:var(–ac);color:#fff;border-radius:18px 4px 18px 18px}
+.cav{width:26px;height:26px;border-radius:50%;background:conic-gradient(#5B52F0 0deg,#F09050 180deg,#50D0A0 360deg);flex-shrink:0}
+.ai-inp{display:flex;gap:7px;padding:9px 14px 28px;border-top:1px solid var(–bd);background:var(–card);flex-shrink:0}
+.ai-ci{flex:1;background:var(–bg);border:1.5px solid #E0E0E8;border-radius:20px;padding:9px 14px;color:var(–tx);font-size:13px;outline:none;font-family:‘DM Sans’,sans-serif}
+.ai-ci::placeholder{color:#C0C0CC}
+.ai-cs{width:40px;height:40px;border-radius:50%;background:var(–ac);border:none;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-cs:active{opacity:.7}
+.dots{display:flex;gap:3px;padding:3px 0}
+.dots span{width:5px;height:5px;border-radius:50%;background:#C0C0CC;animation:bn 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bn{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+.tst{position:fixed;bottom:108px;left:50%;transform:translateX(-50%) translateY(10px);background:#18182A;color:#fff;border-radius:18px;padding:8px 16px;font-size:11px;white-space:nowrap;opacity:0;transition:all .2s;z-index:500;pointer-events:none;max-width:85vw;text-align:center}
+.tst.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── ACCORDION MODAL ── */
+.mbd{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:center;padding:16px;transition:background .25s;}
+.mbd.on{background:rgba(0,0,0,.55);pointer-events:all;backdrop-filter:blur(6px);}
+.mbox{width:100%;max-width:460px;background:#F5F4F0;border-radius:20px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);transform:translateY(30px);opacity:0;transition:transform .25s,opacity .25s;}
+.mbd.on .mbox{transform:translateY(0);opacity:1;}
+.mhd{padding:14px 16px 10px;border-bottom:1px solid rgba(0,0,0,.08);flex-shrink:0;display:flex;align-items:center;gap:10px;}
+.mhd-back{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;}
+.mtinp{flex:1;border:none;background:transparent;font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:#1C1C1E;outline:none;}
+.mbody-scroll{flex:1;overflow-y:auto;}
+/* Accordion */
+.acc-sec{border-bottom:1px solid rgba(0,0,0,.07);}
+.acc-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.acc-hd:active{background:rgba(0,0,0,.03);}
+.acc-hd-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#1C1C1E;}
+.acc-arrow{font-size:10px;color:#8E8E93;transition:transform .2s;}
+.acc-arrow.open{transform:rotate(180deg);}
+.acc-bd{display:none;padding:4px 16px 14px;}
+.acc-bd.open{display:block;}
+/* Todo */
+.todo-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05);}
+.todo-chk{width:22px;height:22px;border-radius:50%;border:2px solid rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;flex-shrink:0;}
+.todo-chk.done{background:#4A47E8;border-color:#4A47E8;color:#fff;}
+.todo-txt{font-size:13px;flex:1;line-height:1.4;}
+.todo-txt.done{text-decoration:line-through;opacity:.4;}
+.todo-add-row{display:flex;gap:8px;margin-top:10px;}
+.todo-inp{flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid rgba(0,0,0,.1);background:#fff;font-size:13px;outline:none;}
+.todo-inp:focus{border-color:#4A47E8;}
+.todo-btn{padding:10px 14px;border-radius:10px;background:#4A47E8;border:none;color:#fff;font-size:16px;font-weight:700;cursor:pointer;}
+/* Note */
+.note-ta{width:100%;min-height:100px;border-radius:12px;border:1.5px solid rgba(0,0,0,.1);padding:12px;font-family:DM Sans,sans-serif;font-size:13px;outline:none;resize:none;background:#fff;line-height:1.6;}
+.note-ta:focus{border-color:#4A47E8;}
+/* AI */
+.ai-log{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;margin-bottom:10px;}
+.ai-msg{padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.5;}
+.ai-msg.user{background:#4A47E8;color:#fff;align-self:flex-end;margin-left:30px;}
+.ai-msg.ai{background:#fff;color:#1C1C1E;margin-right:30px;}
+.ai-add-row{display:flex;gap:8px;}
+/* Section picker */
+.sec-add-btn{display:flex;align-items:center;gap:8px;padding:13px 16px;cursor:pointer;color:#4A47E8;font-size:13px;font-weight:600;border-top:1px solid rgba(0,0,0,.07);}
+.sec-picker{display:none;padding:8px 16px 14px;background:rgba(0,0,0,.03);}
+.sec-picker.open{display:block;}
+.sec-picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sec-pick-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#fff;border-radius:12px;cursor:pointer;font-size:13px;font-weight:500;border:1.5px solid rgba(0,0,0,.06);}
+.sec-pick-item:active{background:#F0EFFF;border-color:#4A47E8;}
+/* Draw tools */
+.draw-tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.draw-tool{padding:6px 10px;border-radius:8px;border:1.5px solid rgba(0,0,0,.1);background:#fff;font-size:11px;cursor:pointer;}
+.draw-tool.active{background:#4A47E8;color:#fff;border-color:#4A47E8;}
+
+/* ── Paper UI Overrides ── */
+#app { background: #EDEAE4; }
+#grid-wrap { background: transparent; }
+.sb { background: #EDEAE4; border-bottom: none; }
+.bnav-wrap { background: rgba(237,234,228,.92); backdrop-filter: blur(12px); border-top: 1px solid rgba(0,0,0,.06); }
+.orb { background: linear-gradient(135deg, #7A9DBF, #5FA8A0); box-shadow: 0 4px 16px rgba(90,140,180,.35); }
+/* Card text white, soft */
+.gc { color: rgba(255,255,255,.95); font-family: ‘DM Sans’, sans-serif; }
+
+/* ── View Slide System ── */
+#views-outer{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;}
+#views-track{display:flex;flex-direction:row;width:400%;height:100%;flex:none;transition:transform .35s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.view{flex:0 0 25%;width:25%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(–bg);}
+.view-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;flex-shrink:0;}
+.view-title{font-family:‘Syne’,sans-serif;font-size:19px;font-weight:800;color:var(–tx);}
+
+/* ── Settings Drawer ── */
+#settings-overlay{
+position:fixed;inset:0;z-index:300;
+background:rgba(0,0,0,0);
+pointer-events:none;
+transition:background .35s;
+}
+#settings-overlay.open{
+background:rgba(0,0,0,.25);
+pointer-events:all;
+}
+/* App pushed left when drawer opens */
+#app{
+transition:transform .35s cubic-bezier(.4,0,.2,1), border-radius .35s;
+}
+#app.drawer-open{
+transform:translateX(-72%) scale(0.92);
+border-radius:20px;
+overflow:hidden;
+}
+#settings-drawer{
+position:fixed;top:0;right:0;bottom:0;
+width:78%;max-width:340px;
+background:#F5F4F0;
+color:#1A1A1A;
+z-index:301;
+transform:translateX(100%);
+transition:transform .35s cubic-bezier(.4,0,.2,1);
+display:flex;flex-direction:column;
+overflow:hidden;
+border-radius:0;
+}
+#settings-drawer.open{transform:translateX(0);}
+.sd-head{padding:56px 24px 16px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;}
+.sd-title{font-family:‘Syne’,sans-serif;font-size:36px;font-weight:900;letter-spacing:-1px;line-height:1;color:#1A1A1A;}
+.sd-sort{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.sd-search{margin:0 16px 12px;background:#fff;border-radius:12px;display:flex;align-items:center;gap:8px;padding:10px 14px;}
+.sd-search input{border:none;outline:none;font-size:14px;background:transparent;color:#1A1A1A;flex:1;}
+.sd-search input::placeholder{color:#BBBBBB;}
+.sd-scroll{flex:1;overflow-y:auto;padding:0 16px 24px;}
+.sd-section{margin-bottom:8px;}
+.sd-sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#AAAAAA;padding:12px 4px 6px;}
+.sd-row{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:2px;}
+.sd-item{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid #F5F5F5;cursor:pointer;}
+.sd-item:last-child{border-bottom:none;}
+.sd-item:active{background:#F0F0F0;}
+.sd-ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sd-lbl{font-size:14px;font-weight:500;flex:1;color:#1A1A1A;}
+.sd-val{font-size:12px;color:#AAAAAA;}
+.sd-arr{font-size:12px;color:#CCCCCC;}
+.sd-toggle{width:44px;height:26px;border-radius:13px;background:#E0E0E0;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.sd-toggle.on{background:#4A47E8;}
+.sd-toggle::after{content:’’;position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.sd-toggle.on::after{transform:translateX(18px);}
+.sd-bottom{padding:16px;flex-shrink:0;border-top:1px solid #EBEBEB;}
+.sd-ver{text-align:center;font-size:11px;color:#CCCCCC;margin-bottom:12px;}
+.sd-upgrade{background:#4A47E8;color:#fff;font-family:‘Syne’,sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;padding:14px;border-radius:14px;text-align:center;cursor:pointer;border:none;width:100%;}
+.sd-upgrade:active{opacity:.85;}
+
+@keyframes ctxIn {
+from { opacity:0; transform:scale(.85) translateY(-4px); }
+to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.edit-active .gc-gear { display:flex !important; }
+
+/* ── Hızlı Ekle Paneli ── */
+#quick-add-overlay{
+position:fixed;inset:0;z-index:400;
+background:rgba(0,0,0,0);pointer-events:none;
+transition:background .25s;
+display:flex;align-items:flex-end;
+}
+#quick-add-overlay.open{
+background:rgba(0,0,0,.4);pointer-events:all;
+}
+#quick-add-panel{
+width:100%;background:#F5F4F0;
+border-radius:22px 22px 0 0;
+padding:16px 16px 36px;
+transform:translateY(100%);
+transition:transform .3s cubic-bezier(.4,0,.2,1);
+box-shadow:0 -4px 30px rgba(0,0,0,.15);
+}
+#quick-add-overlay.open #quick-add-panel{
+transform:translateY(0);
+}
+.qa-handle{width:36px;height:4px;border-radius:2px;background:#DEDEDE;margin:0 auto 16px;}
+.qa-title{font-family:‘Syne’,sans-serif;font-size:13px;font-weight:700;color:#888;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;}
+.qa-input{
+width:100%;background:#fff;border:none;border-radius:14px;
+padding:14px 16px;font-size:16px;font-family:‘DM Sans’,sans-serif;
+outline:none;color:#1A1A1E;box-sizing:border-box;
+box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+.qa-input::placeholder{color:#C0C0CC;}
+.qa-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.qa-tab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+font-family:‘Syne’,sans-serif;cursor:pointer;border:1.5px solid #E0E0E8;
+background:#fff;color:#999;transition:all .15s;}
+.qa-tab.on{background:#4A47E8;color:#fff;border-color:#4A47E8;}
+.qa-grid-row{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:4px;}
+.qa-grid-chip{
+flex-shrink:0;padding:7px 14px;border-radius:20px;
+font-size:12px;font-weight:600;color:#fff;cursor:pointer;
+white-space:nowrap;opacity:.75;transition:opacity .15s;
+}
+.qa-grid-chip.sel{opacity:1;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.qa-send{
+margin-top:14px;width:100%;padding:14px;border-radius:14px;
+background:#4A47E8;color:#fff;font-family:‘Syne’,sans-serif;
+font-weight:800;font-size:14px;border:none;cursor:pointer;
+box-sizing:border-box;
+}
+.qa-send:active{opacity:.85;}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <div id="views-outer" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;">
+    <div id="views-track" style="display:flex;flex-direction:row;width:400%;height:100%;flex:none;transition:transform .35s cubic-bezier(.4,0,.2,1);">
+
+```
+  <!-- VIEW 0: Raf -->
+  <div class="view" id="view-raf" style="flex:0 0 25%;width:25%;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="view-header">
+      <div class="view-title">📚 Raf</div>
+      <span style="font-size:11px;color:var(--mu)" id="raf-count">0 bekleyen</span>
+    </div>
+    <div class="pb2">
+      <div class="dtabs" id="raf-tabs">
+        <div class="dtab on" onclick="rafTab(this,'rt-bk')">Bekleyenler</div>
+        <div class="dtab" onclick="rafTab(this,'rt-tm')">Tamamlananlar</div>
+        <div class="dtab" onclick="rafTab(this,'rt-ai')">AI Kararları</div>
+      </div>
+      <div id="rt-bk" class="rlist"></div>
+      <div id="rt-tm" class="rlist" style="display:none"></div>
+      <div id="rt-ai" class="rlist" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- VIEW 1: Kişisel -->
+  <div class="view" id="view-kisisel" style="flex:0 0 25%;width:25%;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+      <div class="sb"><span id="clk">19:42</span><div style="display:flex;gap:4px;align-items:center"><span style="font-size:10px">LTE</span>📶🔋</div></div>
+```
+
+  <div class="topbar">
+    <div class="avatar" onclick="openPage('p-profil')" style="cursor:pointer">👤</div>
+    <div class="logo"><div class="ring"></div><span class="logo-t">INNER</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div onclick="openCal()" style="cursor:pointer;width:36px;height:36px;border-radius:10px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:18px">📅</div>
+    </div>
+  </div>
+
+  <div id="grid-wrap"></div>
+
+  <div class="aib">
+    <div class="orb"></div>
+    <div class="aibm" id="abm"><b>3 gündür spor grid'in sessiz.</b> Bir şey mi değişti?</div>
+    <div class="aicb" onclick="openPage('p-ai')">💬</div>
+  </div>
+
+  <!-- NAV: ⚙️ | [Raf · Kişisel · Work · Bütçe] | 📋 -->
+
+```
+  </div>
+
+  <!-- VIEW 2: Work -->
+  <div class="view" id="view-work" style="flex:0 0 25%;width:25%;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="view-header"><div class="view-title">💼 Work</div></div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;opacity:.35;flex-direction:column;gap:8px">
+      <div style="font-size:48px">💼</div>
+      <div style="font-size:13px">Yakında geliyor</div>
+    </div>
+  </div>
+
+  <!-- VIEW 3: Bütçe -->
+  <div class="view" id="view-butce" style="flex:0 0 25%;width:25%;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="view-header"><div class="view-title">💰 Bütçe</div></div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;opacity:.35;flex-direction:column;gap:8px">
+      <div style="font-size:48px">💰</div>
+      <div style="font-size:13px">Yakında geliyor</div>
+    </div>
+  </div>
+
+</div>
+```
+
+  </div>
+  <div class="bnav-wrap">
+    <div class="nav-circle" onclick="openSettings()" id="nav-ayarlar">⚙️</div>
+    <div class="bnav">
+      <div class="bni" onclick="navTo(0)" id="bni-raf" style="position:relative">
+        <div class="bni-ic">📚</div><div class="bni-lb">Raf</div>
+        <div class="nbadge" id="shelf-badge" style="display:none">3</div>
+      </div>
+      <div class="bni act" onclick="navTo(1)" id="bni-kisisel">
+        <div class="bni-ic">👤</div><div class="bni-lb">Kişisel</div>
+        <div class="bni-dot"></div>
+      </div>
+      <div class="bni" onclick="navTo(2)" id="bni-work">
+        <div class="bni-ic">💼</div><div class="bni-lb">Work</div>
+      </div>
+      <div class="bni" onclick="navTo(3)" id="bni-butce">
+        <div class="bni-ic">💰</div><div class="bni-lb">Bütçe</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="nav-circle" id="ep2" onclick="toggleEdit()">✏️</div>
+      <div class="nav-circle" onclick="openQuickAdd()" style="background:var(--ac);color:#fff">＋</div>
+    </div>
+  </div></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const GD={
+mobilya:  {title:‘Mobilya’,   pri:‘P1’, st:‘aktif’, sc:0, note:’’, tasks:[{t:‘Çalışma masası’,d:false},{t:‘Malzeme listesi’,d:false}]},
+pano:     {title:‘Pano’,      pri:‘P1’, st:‘aktif’, sc:60, note:’’, tasks:[{t:‘Haftalık plan’,d:false},{t:‘Notlar’,d:true}]},
+cnc:      {title:‘CNC’,       pri:‘P2’, st:‘aktif’, sc:0, note:’’, tasks:[{t:‘G-code hazırla’,d:false}]},
+kitap:    {title:‘Kitap’,     pri:‘P2’, st:‘aktif’, sc:0, note:’’, tasks:[]},
+evisleri: {title:‘Ev İşleri’, pri:‘P2’, st:‘aktif’, sc:0, note:’’, tasks:[{t:‘Mutfak’,d:false},{t:‘Çamaşır’,d:false}]},
+odeme:    {title:‘Ödemeler’,  pri:‘P1’, st:‘aktif’, sc:0, note:’’, tasks:[{t:‘Elektrik’,d:false},{t:‘İnternet’,d:false}]},
+genel:    {title:‘Genel’,     pri:‘P3’, st:‘aktif’, sc:0, note:’’, tasks:[]},
+}
+const GCOLS={
+mobilya:  ‘#7A9DBF’,  // soft mavi
+pano:     ‘#7AAF7A’,  // soft yeşil
+cnc:      ‘#C8925A’,  // soft turuncu
+kitap:    ‘#C87B5A’,  // soft mercan
+evisleri: ‘#C8AA58’,  // soft sarı
+odeme:    ‘#5FA8A0’,  // soft teal
+genel:    ‘#A0A090’,  // soft gri
+};
+// Renk paleti (priority fallback için)
+const PCOLS={P1:[’#7B9FC4’,’#8BAAC8’,’#C4956A’,’#6B8FC4’,’#9B8FC4’],P2:[’#D4956A’,’#7DB87D’,’#C4856A’,’#C48060’,’#D4A87A’],P3:[’#C4A86A’,’#8AB87B’,’#C49060’,’#A8B870’,’#909888’]};
+const PTXT={P1:’#fff’,P2:’#fff’,P3:’#fff’};
+const CIDX={};Object.keys(GD).forEach((k,i)=>CIDX[k]=i%5);
+function gcol(k){const g=GD[k];if(g.st===‘bloke’)return’#D4956A’;if(g.st===‘tamamlandı’)return’#6BBF6B’;return GCOLS[k]||PCOLS[g.pri][CIDX[k]];}
+function gtxt(k){const g=GD[k];if(g.st===‘bloke’||g.st===‘tamamlandı’)return’rgba(0,0,0,.72)’;return PTXT[g.pri];}
+
+// ═══════════════════════════════════════════
+// GRID ENGINE v4 — SERBEST YERLEŞİM
+// Her grid: {key, x, y, w, h} — piksel cinsinden, bağımsız
+// Sürükle → taşı, köşeden çek → boyutlandır
+// Birbirinden tamamen bağımsız, örtüşebilir
+// ═══════════════════════════════════════════
+
+const GAP = 2;
+const MIN_W = 80;   // min genişlik px
+const MIN_H = 70;   // min yükseklik px
+
+// Başlangıç layout — yüzde bazlı tanım, init’te px’e çevrilir
+// [key, x%, y%, w%, h%]
+const LAYOUT_DEF = [
+[‘mobilya’,  0,   0,  58,  31],
+[‘pano’,    58,   0,  42,  31],
+[‘cnc’,      0,  31,  33,  23],
+[‘evisleri’,33,  31,  33,  23],
+[‘kitap’,   66,  31,  34,  23],
+[‘odeme’,    0,  54,  50,  46],
+[‘genel’,   50,  54,  50,  46],
+];
+
+// ═══════════════════════════════════════════
+// KALICI VERİ — localStorage
+// ═══════════════════════════════════════════
+const STORE_KEY = ‘inner_v9_data’;
+
+// IndexedDB for persistent storage (works with Safari Add to Home Screen)
+let _db = null;
+function openDB(){
+return new Promise((res,rej)=>{
+const req = indexedDB.open(‘inner_v9’, 1);
+req.onupgradeneeded = e => e.target.result.createObjectStore(‘data’);
+req.onsuccess = e => { _db = e.target.result; res(_db); };
+req.onerror = () => rej();
+});
+}
+function dbSet(key, val){
+if(!_db) return;
+const tx = _db.transaction(‘data’,‘readwrite’);
+tx.objectStore(‘data’).put(val, key);
+}
+function dbGet(key){
+return new Promise((res)=>{
+if(!_db){ res(null); return; }
+const tx = _db.transaction(‘data’,‘readonly’);
+const req = tx.objectStore(‘data’).get(key);
+req.onsuccess = () => res(req.result || null);
+req.onerror = () => res(null);
+});
+}
+
+function getPayload(){
+return JSON.stringify({
+GD, GCOLS, shelfKeys,
+layout: ITEMS.map(i=>({key:i.key, xp:i.x, yp:i.y, wp:i.w, hp:i.h})),
+savedAt: Date.now()
+});
+}
+
+function saveData(){
+const payload = getPayload();
+// 1. IndexedDB (ana)
+dbSet(STORE_KEY, payload);
+// 2. localStorage (yedek)
+try { localStorage.setItem(STORE_KEY, payload); } catch(e){}
+// 3. sessionStorage (yedek)
+try { sessionStorage.setItem(STORE_KEY, payload); } catch(e){}
+}
+
+function applyData(raw){
+if(!raw) return false;
+try {
+const d = JSON.parse(raw);
+if(d.GD) Object.assign(GD, d.GD);
+if(d.GCOLS) Object.assign(GCOLS, d.GCOLS);
+if(d.shelfKeys) shelfKeys = d.shelfKeys;
+if(d.layout && d.layout.length > 0) _savedLayout = d.layout;
+return true;
+} catch(e){ return false; }
+}
+
+function loadData(){
+// localStorage’dan hızlı yükle (sync)
+try {
+const raw = localStorage.getItem(STORE_KEY) || sessionStorage.getItem(STORE_KEY);
+if(raw) return applyData(raw);
+} catch(e){}
+return false;
+}
+
+async function loadDataAsync(){
+// IndexedDB’den yükle (async, daha güvenilir)
+try {
+await openDB();
+const raw = await dbGet(STORE_KEY);
+if(raw){
+applyData(raw);
+renderGrid();
+updateShelfBadge();
+}
+} catch(e){}
+}
+
+let _savedLayout = null;
+
+function clearData(){
+if(confirm(‘Tüm veriler silinsin mi?’)){
+localStorage.removeItem(STORE_KEY);
+location.reload();
+}
+}
+
+// Auto-save: GD veya ITEMS değişince 1sn debounce ile kaydet
+let _saveTimer = null;
+function autoSave(){
+clearTimeout(_saveTimer);
+_saveTimer = setTimeout(saveData, 800);
+}
+
+let ITEMS = [];
+let shelfKeys = [];
+const REASONS = {};
+let longT = null;
+let dragState = null;
+let resizeState = null;
+let editMode = false;
+
+function activeL(){ return ITEMS.filter(i=>!shelfKeys.includes(i.key)); }
+let L = ITEMS; // compat
+
+// ─────────────────────────────────────────
+// INIT — ilk açılışta % → px
+// ─────────────────────────────────────────
+function initLayout(){
+const wrap = document.getElementById(‘grid-wrap’);
+if(!wrap) return;
+const W = wrap.offsetWidth;
+const H = wrap.offsetHeight;
+const G = GAP; // 6px
+ITEMS = LAYOUT_DEF.map(([key,xp,yp,wp,hp])=>{
+const x = Math.round(xp/100*W);
+const y = Math.round(yp/100*H);
+const w = Math.round(wp/100*W);
+const h = Math.round(hp/100*H);
+// İç GAP: komşu gridler arasına boşluk ekle, kenarlarda eklenmiyor
+const gx = xp>0 ? G : 0;
+const gy = yp>0 ? G : 0;
+const gw = (xp+wp<100) ? G : 0;
+const gh = (yp+hp<100) ? G : 0;
+return {
+key,
+x: x + gx,
+y: y + gy,
+w: Math.max(MIN_W, w - gx - gw),
+h: Math.max(MIN_H, h - gy - gh),
+};
+});
+// h<=w constraint
+ITEMS.forEach(i=>{ if(i.h>i.w) i.h=i.w; });
+L = ITEMS;
+}
+
+// ─────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────
+
+function renderGrid(){
+const wrap = document.getElementById(‘grid-wrap’);
+if(!wrap) return;
+if(ITEMS.length === 0) initLayout();
+wrap.innerHTML = ‘’;
+const W = wrap.offsetWidth;
+const H = wrap.offsetHeight;
+
+activeL().forEach(item=>{
+const g = GD[item.key];
+const big = item.w > 130 && item.h > 90;
+const med = item.w > 85  || item.h > 70;
+
+```
+const el = document.createElement('div');
+el.className = 'gc' + (editMode ? ' edit-on' : '');
+el.id = 'gc-' + item.key;
+// Clamp to bounds + h<=w constraint
+item.x = Math.max(0, Math.min(W - item.w, item.x));
+item.y = Math.max(0, Math.min(H - item.h, item.y));
+item.w = Math.max(MIN_W, Math.min(W - item.x, item.w));
+item.h = Math.max(MIN_H, Math.min(H - item.y, item.h));
+el.style.cssText = `
+  left:${item.x}px; top:${item.y}px;
+  width:${item.w}px; height:${item.h}px;
+  background:${gcol(item.key)};
+  color:${gtxt(item.key)};
+  padding:${big?10:6}px;
+  box-shadow:0 4px 16px rgba(0,0,0,.22),0 1px 4px rgba(0,0,0,.14);
+  z-index:1;
+`;
+el.innerHTML = buildC(item.key, g, big, med, item.w, item.h);
+
+// Noise layer
+const nl = document.createElement('div');
+nl.className = 'noise-layer';
+el.appendChild(nl);
+
+if(editMode){
+  // Resize handle — merkeze bakan köşe
+  const cx = item.x + item.w/2;
+  const cy = item.y + item.h/2;
+  const midX = W/2, midY = H/2;
+  const isLeft = cx < midX;
+  const isTop  = cy < midY;
+  let pos, hStyle;
+  if(!isLeft && !isTop){ pos='tl'; hStyle='top:0;left:0;cursor:nw-resize'; }
+  else if(isLeft && !isTop){ pos='tr'; hStyle='top:0;right:0;cursor:ne-resize'; }
+  else if(!isLeft && isTop){ pos='bl'; hStyle='bottom:0;left:0;cursor:sw-resize'; }
+  else { pos='br'; hStyle='bottom:0;right:0;cursor:se-resize'; }
+
+  // 4 köşe handle
+  const corners = [
+    {pos:'tl', style:'top:0;left:0;cursor:nw-resize'},
+    {pos:'tr', style:'top:0;right:0;cursor:ne-resize'},
+    {pos:'bl', style:'bottom:0;left:0;cursor:sw-resize'},
+    {pos:'br', style:'bottom:0;right:0;cursor:se-resize'},
+  ];
+  corners.forEach(({pos:cp, style:cs})=>{
+    const rh = document.createElement('div');
+    rh.className = 'rh';
+    rh.dataset.pos = cp;
+    rh.style.cssText = `position:absolute;${cs};width:44px;height:44px;z-index:10;touch-action:none;display:block;`;
+    el.appendChild(rh);
+    attachResize(rh, item);
+  });
+  // 4 kenar handle
+  const edges = ['t','b','l','r'];
+  edges.forEach(ep=>{
+    const eh = document.createElement('div');
+    eh.className = 'rh-edge';
+    eh.dataset.pos = ep;
+    eh.style.display = 'block';
+    el.appendChild(eh);
+    attachResize(eh, item);
+  });
+}
+
+attachTap(el, item);
+wrap.appendChild(el);
+```
+
+});
+
+startTimer();
+autoSave();
+}
+
+function updateEl(item){
+const el = document.getElementById(‘gc-’+item.key);
+if(!el) return;
+el.style.left  = item.x+‘px’;
+el.style.top   = item.y+‘px’;
+el.style.width = item.w+‘px’;
+el.style.height= item.h+‘px’;
+}
+
+function quickAddTodo(key){
+if(!GD[key]) return;
+const text = prompt(‘Yeni görev:’);
+if(!text || !text.trim()) return;
+if(!GD[key].tasks) GD[key].tasks = [];
+GD[key].tasks.push({t: text.trim(), d: false});
+renderGrid();
+toast(‘✅ Görev eklendi’);
+}
+
+function buildC(k, g, big, med, w, h){
+const tot  = (g.tasks||[]).length;
+const dn   = (g.tasks||[]).filter(t=>t.d).length;
+const pct  = tot>0 ? Math.round(dn/tot*100) : g.sc||0;
+const titleFS = big ? `${Math.min(28, w/7)}px` : med ? ‘16px’ : ‘12px’;
+const catFS   = big ? ‘10px’ : ‘9px’;
+
+const priLabel = {P1:‘●  Kritik’, P2:‘●  Normal’, P3:‘●  Düşük’}[g.pri] || ‘’;
+const priCol   = {P1:‘rgba(255,255,255,.9)’, P2:‘rgba(255,255,255,.7)’, P3:‘rgba(255,255,255,.5)’}[g.pri] || ‘’;
+
+const taskPreview = big && tot>0
+? (g.tasks||[]).slice(0,3).map(t=>` <div style="display:flex;align-items:center;gap:6px;margin-top:5px;opacity:${t.d?.6:1}"> <div style="width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;background:${t.d?'rgba(255,255,255,.5)':'transparent'}">${t.d?'✓':''}</div> <span style="font-size:11px;text-decoration:${t.d?'line-through':'none'};opacity:${t.d?.5:.85};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.t}</span> </div>`).join(’’)
+: ‘’;
+
+const progressBar = med && tot>0 ? ` <div style="height:3px;background:rgba(255,255,255,.25);border-radius:2px;margin-top:auto;padding-top:4px"> <div style="height:100%;width:${pct}%;background:rgba(255,255,255,.75);border-radius:2px;"></div> </div>` : ‘’;
+
+return `
+<div class="gc-gear" ontouchend="event.stopPropagation();showGridMenu({key:'${k}'},this)" onclick="event.stopPropagation();showGridMenu({key:'${k}'},this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.18);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;font-size:12px;cursor:pointer;z-index:15">⚙️</div>
+<div style="display:flex;flex-direction:column;height:100%;padding:8px 8px 4px 8px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start">
+<div style="font-size:${catFS};font-weight:600;letter-spacing:.08em;opacity:.65;text-transform:uppercase">${g.title.slice(0,10)}</div>
+<div style="display:flex;align-items:center;gap:4px">
+<div style="font-size:9px;font-weight:600;color:${priCol};opacity:.8">${big||med?priLabel:’’}</div>
+<div ontouchend="event.stopPropagation();quickAddTodo('${k}')" onclick="event.stopPropagation();quickAddTodo('${k}')" style="width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">+</div>
+
+```
+    </div>
+  </div>
+  ${med||big ? `<div style="font-size:${titleFS};font-weight:800;letter-spacing:-.5px;line-height:1.1;margin-top:4px">${g.title}</div>` : ''}
+  ${taskPreview}
+  <div style="flex:1"></div>
+  ${progressBar}
+  ${med&&tot>0?`<div style="font-size:9px;margin-top:3px;opacity:.6">${dn}/${tot} tamamlandı</div>`:''}
+</div>`;
+```
+
+}
+
+// ─────────────────────────────────────────
+// TAP + DRAG (edit modda)
+// ─────────────────────────────────────────
+
+// ─────────────────────────────────────────
+// SNAP — drag bırakınca çakışan grid’lerle yer değiştir
+// ─────────────────────────────────────────
+function snapToGrid(dragged){
+const wrap = document.getElementById(‘grid-wrap’);
+if(!wrap) return;
+const W = wrap.offsetWidth, H = wrap.offsetHeight;
+const active = activeL();
+
+// 1. Mevcut pozisyona göre sırayı yeniden hesapla (soldan sağa, yukarıdan aşağıya)
+// Her grid’in merkezi kullanılır
+const withCenter = active.map(i=>({
+key: i.key,
+cx: i.x + i.w/2,
+cy: i.y + i.h/2,
+}));
+
+// Satır grupları: yakın y değerlerini aynı satır say
+withCenter.sort((a,b)=> a.cy - b.cy);
+const rows = [];
+const ROW_THRESHOLD = 60; // px
+withCenter.forEach(item=>{
+const lastRow = rows[rows.length-1];
+if(!lastRow || Math.abs(item.cy - lastRow[0].cy) > ROW_THRESHOLD){
+rows.push([item]);
+} else {
+lastRow.push(item);
+}
+});
+// Her satırı soldan sağa sırala
+rows.forEach(row => row.sort((a,b)=>a.cx-b.cx));
+
+// Yeni sıra dizisi
+const newOrder = rows.flat().map(i=>i.key);
+
+// 2. Alan ağırlıklarını koru
+const areas = {};
+active.forEach(i => areas[i.key] = i.w * i.h);
+
+// 3. packByOrder ile yeniden yerleştir
+packByOrder(newOrder, areas, W, H, active);
+
+// 4. Boşluk doldur
+fillWithSmallest(newOrder, areas, W, H, active);
+
+// 5. h<=w constraint
+active.forEach(i=>{ if(i.h>i.w) i.h=i.w; });
+autoSave();
+}
+
+function attachTap(el, item){
+let sx=0, sy=0, moved=false;
+
+el.addEventListener(‘touchstart’,e=>{
+if(e.target.classList.contains(‘rh’)||e.target.classList.contains(‘rh-edge’)) return;
+sx=e.touches[0].clientX; sy=e.touches[0].clientY; moved=false;
+if(!editMode){
+// longpress disabled
+} else {
+// Edit modda: uzun basış olmadan direkt sürükle
+dragState = {
+key: item.key,
+tid: e.touches[0].identifier,
+sx: e.touches[0].clientX,
+sy: e.touches[0].clientY,
+ox: item.x,
+oy: item.y,
+};
+el.style.zIndex = ‘50’;
+el.style.boxShadow = ‘0 16px 48px rgba(0,0,0,.30)’;
+vibrate();
+}
+},{passive:true});
+
+el.addEventListener(‘touchmove’,e=>{
+if(e.target.classList.contains(‘rh’)||e.target.classList.contains(‘rh-edge’)) return;
+const t = […e.touches].find(t=>dragState&&t.identifier===dragState.tid) || e.touches[0];
+if(Math.abs(t.clientX-sx)>6||Math.abs(t.clientY-sy)>6) moved=true;
+clearTimeout(longT);
+if(!dragState) return;
+e.preventDefault();
+const wrap = document.getElementById(‘grid-wrap’);
+const W = wrap.offsetWidth, H = wrap.offsetHeight;
+item.x = Math.max(0, Math.min(W-item.w, dragState.ox + t.clientX - dragState.sx));
+item.y = Math.max(0, Math.min(H-item.h, dragState.oy + t.clientY - dragState.sy));
+el.style.left = item.x+‘px’;
+el.style.top  = item.y+‘px’;
+},{passive:false});
+
+el.addEventListener(‘touchend’,e=>{
+clearTimeout(longT);
+if(dragState && dragState.key===item.key){
+el.style.zIndex = ‘1’;
+el.style.boxShadow = ‘0 4px 16px rgba(0,0,0,.22),0 1px 4px rgba(0,0,0,.14)’;
+dragState = null;
+snapToGrid(item);
+renderGrid();
+} else if(!moved && !editMode){
+openM(item.key);
+}
+});
+}
+
+// ─────────────────────────────────────────
+// RESIZE — köşeden sürükle
+// ─────────────────────────────────────────
+function attachResize(rh, item){
+rh.addEventListener(‘touchstart’,e=>{
+e.stopPropagation();
+e.preventDefault();
+const pos = rh.dataset.pos || ‘br’;
+// O anki sırayı kaydet: soldan sağa, yukarıdan aşağıya
+const snapOrder = activeL()
+.sort((a,b)=> a.y!==b.y ? a.y-b.y : a.x-b.x)
+.map(i=>i.key);
+resizeState = {
+key: item.key,
+tid: e.touches[0].identifier,
+pos,
+sx: e.touches[0].clientX,
+sy: e.touches[0].clientY,
+ox: item.x, oy: item.y,
+ow: item.w, oh: item.h,
+order: snapOrder,
+movesRight:  pos===‘br’||pos===‘tr’||pos===‘r’,
+movesLeft:   pos===‘bl’||pos===‘tl’||pos===‘l’,
+movesBottom: pos===‘br’||pos===‘bl’||pos===‘b’,
+movesTop:    pos===‘tr’||pos===‘tl’||pos===‘t’,
+};
+vibrate();
+},{passive:false});
+}
+
+document.addEventListener(‘touchmove’,e=>{
+if(!resizeState) return;
+const rs = resizeState;
+const touch = […e.touches].find(t=>t.identifier===rs.tid);
+if(!touch) return;
+e.preventDefault();
+
+const wrap = document.getElementById(‘grid-wrap’);
+const W = wrap.offsetWidth, H = wrap.offsetHeight;
+const dx = touch.clientX - rs.sx;
+const dy = touch.clientY - rs.sy;
+const item = ITEMS.find(i=>i.key===rs.key);
+if(!item) return;
+
+const p = rs.pos;
+// Sağ kenar: br, tr, r
+if(p===‘br’||p===‘tr’||p===‘r’)
+item.w = Math.max(MIN_W, Math.min(W-rs.ox, rs.ow+dx));
+// Sol kenar: bl, tl, l
+if(p===‘bl’||p===‘tl’||p===‘l’){
+const nw = Math.max(MIN_W, rs.ow-dx);
+item.x = Math.min(rs.ox+rs.ow-MIN_W, Math.max(0, rs.ox+dx));
+item.w = nw;
+}
+// Alt kenar: br, bl, b — h <= w zorunlu
+if(p===‘br’||p===‘bl’||p===‘b’)
+item.h = Math.max(MIN_H, Math.min(item.w, Math.min(H-rs.oy, rs.oh+dy)));
+// Üst kenar: tr, tl, t — h <= w zorunlu
+if(p===‘tr’||p===‘tl’||p===‘t’){
+const nh = Math.max(MIN_H, Math.min(item.w, rs.oh-dy));
+item.y = Math.min(rs.oy+rs.oh-MIN_H, Math.max(0, rs.oy+dy));
+item.h = nh;
+}
+// Sağ/sol kenar çekilince w küçüldüyse h’yi de kırp
+if(item.h > item.w) item.h = item.w;
+
+updateEl(item);
+},{passive:false});
+
+document.addEventListener(‘touchend’,e=>{
+if(!resizeState) return;
+const rs = resizeState;
+// h <= w constraint
+const _ri = ITEMS.find(i=>i.key===rs.key);
+if(_ri && _ri.h > _ri.w) _ri.h = _ri.w;
+resizeState = null;
+smartFill(rs);
+renderGrid();
+toast(‘↔ Boyutlandırıldı’);
+});
+
+// ─────────────────────────────────────────
+// SMART FILL — resize bittikten sonra
+// Komşu grid’leri uzat ama çarpışma kontrolü yap
+// ─────────────────────────────────────────
+function smartFill(rs){
+const wrap = document.getElementById(‘grid-wrap’);
+if(!wrap) return;
+const W = wrap.offsetWidth;
+const H = wrap.offsetHeight;
+const active = activeL();
+if(active.length < 2) return;
+
+// 1. Kayıtlı sırayı kullan (resize başında alındı)
+const order = rs.order || active.map(i=>i.key);
+
+// 2. Her grid’in mevcut alanını hesapla (ağırlık = w*h)
+const totalArea = W * H;
+const areas = {};
+active.forEach(i => areas[i.key] = i.w * i.h);
+
+// Değişen grid’in alan farkı
+const changed = active.find(i=>i.key===rs.key);
+if(!changed) return;
+const oldArea = rs.ow * rs.oh;
+const newArea = changed.w * changed.h;
+const delta = oldArea - newArea; // pozitif = küçüldü, negatif = büyüdü
+
+// 3. Delta’yı diğerlere oransal dağıt
+const others = active.filter(i=>i.key!==rs.key);
+const othersTotal = others.reduce((s,i)=>s+areas[i.key],0);
+others.forEach(i=>{
+const share = delta * (areas[i.key]/othersTotal);
+areas[i.key] = Math.max(MIN_W*MIN_H, areas[i.key] + share);
+});
+
+// 4. Sıraya göre wrap’a pack et
+packByOrder(order, areas, W, H, active);
+
+// 5. Boşluk kaldıysa → en küçük grid’i oraya taşı
+fillWithSmallest(order, areas, W, H, active);
+}
+
+// Sıraya göre satır-bazlı pack
+function packByOrder(order, areas, W, H, active){
+// Alanı köke göre yaklaşık kare grid boyutuna çevir
+// Sonra satırlara yerleştir
+
+const items = order
+.map(k=>active.find(i=>i.key===k))
+.filter(Boolean);
+
+// Her item için hedef alan
+// Toplam alan = W*H, her item kendi payını alır
+const totalTarget = items.reduce((s,i)=>s+areas[i.key],0);
+
+// Satırları belirle: soldan sağa yerleştir, satır dolunca alta geç
+// Her item’ın genişliği = sqrt(area * W/H) yaklaşımı
+let curX = GAP, curY = GAP;
+let rowH = 0;
+let rowItems = [];
+
+function placeRow(rowItems, y, availH){
+if(!rowItems.length) return;
+const rowAreaTotal = rowItems.reduce((s,ri)=>s+areas[ri.key],0);
+let x = GAP;
+rowItems.forEach(ri=>{
+const frac = areas[ri.key]/rowAreaTotal;
+const w = Math.max(MIN_W, Math.round(frac*(W-GAP*(rowItems.length+1))));
+const h = Math.max(MIN_H, availH);
+ri.x = x; ri.y = y; ri.w = w; ri.h = h;
+x += w + GAP;
+});
+}
+
+// Kaç satır? mevcut layout’taki satır sayısını koru
+// items’ları y pozisyonlarına göre satırlara grupla
+const sortedByY = […items].sort((a,b)=>a.y-b.y);
+const rows = [];
+let currentRow = [];
+let lastRowY = -999;
+
+sortedByY.forEach(item=>{
+if(item.y - lastRowY > MIN_H*0.5 && currentRow.length>0){
+rows.push([…currentRow]);
+currentRow = [];
+}
+currentRow.push(item);
+lastRowY = item.y;
+});
+if(currentRow.length) rows.push(currentRow);
+
+// Her satırın toplam ağırlığı
+const rowWeights = rows.map(row=>row.reduce((s,i)=>s+areas[i.key],0));
+const totalW = rowWeights.reduce((s,w)=>s+w,0);
+const availH = H - GAP*(rows.length+1);
+
+let y = GAP;
+rows.forEach((row,ri)=>{
+const rh = Math.max(MIN_H, Math.round((rowWeights[ri]/totalW)*availH));
+placeRow(row, y, rh);
+y += rh + GAP;
+});
+}
+
+// Boşluk varsa en küçük grid’i oraya taşı, tekrar pack
+function fillWithSmallest(order, areas, W, H, active){
+// Bounding box’ı kontrol et
+const maxX = Math.max(…active.map(i=>i.x+i.w));
+const maxY = Math.max(…active.map(i=>i.y+i.h));
+const gapX = W - maxX - GAP;
+const gapY = H - maxY - GAP;
+
+// Anlamlı boşluk yoksa çık
+if(gapX < MIN_W && gapY < MIN_H) return;
+
+// En küçük grid’i bul
+const smallest = active.reduce((a,b)=>areas[a.key]<areas[b.key]?a:b);
+
+// Boşluğa sığıyor mu?
+const fits = (gapX >= MIN_W && smallest.h <= (H - maxY + GAP)) ||
+(gapY >= MIN_H && smallest.w <= (W - maxX + GAP));
+
+if(!fits) return;
+
+// En küçük grid’i boşluğa taşı
+const oldKey = smallest.key;
+const oldArea = areas[oldKey];
+
+// Boşluk pozisyonu
+if(gapY >= MIN_H){
+smallest.x = GAP;
+smallest.y = maxY + GAP;
+smallest.w = Math.min(smallest.w, W - GAP*2);
+smallest.h = Math.max(MIN_H, gapY);
+} else {
+smallest.x = maxX + GAP;
+smallest.y = GAP;
+smallest.w = Math.max(MIN_W, gapX);
+smallest.h = Math.min(smallest.h, H - GAP*2);
+}
+
+// Taşınan grid’in eski alanı diğerlere dağıt
+const others = active.filter(i=>i.key!==oldKey);
+const othersTotal = others.reduce((s,i)=>s+areas[i.key],0);
+others.forEach(i=>{
+const share = oldArea*(areas[i.key]/othersTotal);
+areas[i.key] += share*0.5; // yarısını ver, abartma
+});
+
+// Tekrar pack
+packByOrder(order, areas, W, H, active);
+
+// Kırp — wrap dışına taşanları sınırla
+active.forEach(i=>{
+i.x = Math.max(0, i.x);
+i.y = Math.max(0, i.y);
+i.w = Math.min(W-i.x-GAP, i.w);
+i.h = Math.min(H-i.y-GAP, i.h);
+i.w = Math.max(MIN_W, i.w);
+i.h = Math.max(MIN_H, i.h);
+if(i.h > i.w) i.h = i.w;
+});
+}
+// ─────────────────────────────────────────
+// EDIT MODE
+// ─────────────────────────────────────────
+function enterEdit(){
+editMode=true;
+document.getElementById(‘ep2’)?.classList.add(‘on’);
+renderGrid();
+}
+function toggleEdit(){
+const wrap = document.getElementById(‘grid-wrap’);
+if(editMode){
+editMode=false;
+document.getElementById(‘ep2’)?.classList.remove(‘on’);
+wrap?.classList.remove(‘edit-active’);
+renderGrid();
+toast(‘✅ Kaydedildi’);
+} else {
+editMode=true;
+document.getElementById(‘ep2’)?.classList.add(‘on’);
+wrap?.classList.add(‘edit-active’);
+renderGrid();
+toast(‘✏️ Düzenleme modu’);
+}
+}
+function vibrate(){if(navigator.vibrate)navigator.vibrate([15,8,15]);}
+
+// ─────────────────────────────────────────
+// TIMER
+// ─────────────────────────────────────────
+let timerSec=23*60+47, timerRunning=false;
+function startTimer(){
+if(timerRunning) return;
+timerRunning=true;
+setInterval(()=>{
+if(timerSec>0) timerSec–;
+const el=document.getElementById(‘tmr’);
+if(el) el.textContent=Math.floor(timerSec/60).toString().padStart(2,‘0’)+’:’+(‘0’+timerSec%60).slice(-2);
+},1000);
+}
+
+// setPri — renk/öncelik değiştir
+function setPri(k,p){
+GD[k].pri=p;
+toast(`✅ ${GD[k].title} → ${p}`);
+renderGrid();
+}
+
+// Rafa gönder
+function shelfItem(k){
+if(shelfKeys.includes(k)) return;
+shelfKeys.push(k);
+updateShelfBadge();
+closeM();
+renderGrid();
+addToRaf(k);
+toast(`📚 ${GD[k].title} rafa gönderildi`);
+}
+
+function restoreFromShelf(k){
+shelfKeys=shelfKeys.filter(x=>x!==k);
+GD[k].st=‘aktif’;
+updateShelfBadge();
+renderGrid();
+toast(`✅ ${GD[k].title} geri getirildi`);
+}
+
+// noise texture — canvas ile
+function generateNoiseTexture(){
+const size=128;
+const canvas=document.createElement(‘canvas’);
+canvas.width=canvas.height=size;
+const ctx=canvas.getContext(‘2d’);
+const img=ctx.createImageData(size,size);
+const data=img.data;
+for(let i=0;i<size*size;i++){
+const x=i%size, y=Math.floor(i/size);
+let v=0,amp=1,freq=1,max=0;
+for(let oct=0;oct<4;oct++){
+const fx=(x*freq/size)*6.28, fy=(y*freq/size)*6.28;
+v+=(Math.sin(fx*13.7+fy*7.3+oct*2.1)*Math.cos(fx*3.1-fy*11.9+oct*1.7)+Math.random()*0.3)*amp;
+max+=amp;amp*=0.5;freq*=2;
+}
+v=Math.floor(((v/max)*0.5+0.5)*255);
+const idx=i*4;
+data[idx]=data[idx+1]=data[idx+2]=v;data[idx+3]=255;
+}
+ctx.putImageData(img,0,0);
+document.documentElement.style.setProperty(’–noise-url’,`url(${canvas.toDataURL()})`);
+}
+
+// ═══════════════════════════════════════════
+// MODAL — Accordion
+// ═══════════════════════════════════════════
+let curK=null;
+
+function openM(k){
+if(editMode) return;
+curK = k;
+const g = GD[k];
+// Header
+document.getElementById(‘mtitle’).value = g.title;
+// Todo
+renderTodosM(k);
+// Note
+document.getElementById(‘note-ta’).value = g.note || ‘’;
+// AI log temizle
+document.getElementById(‘ai-log’).innerHTML = ‘’;
+// Dinamik bölümler
+if(!g.sections) g.sections = [];
+renderDynSections(g);
+// Öncelik ikonu
+const priColors = {P1:’#E03030’, P2:’#E08820’, P3:’#8888AA’};
+document.getElementById(‘m-pri-ic’).style.color = priColors[g.pri] || ‘’;
+// Aç
+document.getElementById(‘modal’).classList.add(‘on’);
+}
+
+function closeM(){
+if(curK){
+const g = GD[curK];
+if(g) g.note = document.getElementById(‘note-ta’).value;
+}
+document.getElementById(‘modal’).classList.remove(‘on’);
+curK = null;
+renderGrid();
+}
+
+function closeOut(e){
+if(e.target.id === ‘modal’) closeM();
+}
+
+function renameGrid(val){
+if(curK && GD[curK]) GD[curK].title = val;
+}
+
+function cyclePri(){
+if(!curK) return;
+const order = [‘P1’,‘P2’,‘P3’];
+const g = GD[curK];
+g.pri = order[(order.indexOf(g.pri)+1)%3];
+const priColors = {P1:’#E03030’, P2:’#E08820’, P3:’#8888AA’};
+document.getElementById(‘m-pri-ic’).style.color = priColors[g.pri];
+renderGrid();
+toast(’Öncelik: ’+g.pri);
+}
+
+// ── Accordion toggle ──
+function toggleAcc(name){
+const body = document.getElementById(‘body-’+name);
+const arr  = document.getElementById(‘arr-’+name);
+if(!body) return;
+const open = body.classList.contains(‘open’);
+body.classList.toggle(‘open’, !open);
+if(arr) arr.classList.toggle(‘open’, !open);
+}
+
+// ── Todo ──
+function renderTodosM(k){
+const g = GD[k]; if(!g) return;
+const list = document.getElementById(‘todo-list’);
+list.innerHTML = ‘’;
+(g.tasks||[]).forEach((t,i)=>{
+const row = document.createElement(‘div’);
+row.className = ‘todo-row’;
+row.innerHTML = ` <div class="todo-chk ${t.d?'done':''}" onclick="togTodoM('${k}',${i})">${t.d?'✓':''}</div> <div class="todo-txt ${t.d?'done':''}">${t.t}</div> <div onclick="delTodoM('${k}',${i})" style="padding:4px 8px;color:#8E8E93;cursor:pointer;font-size:16px">×</div>`;
+list.appendChild(row);
+});
+}
+function addTodoM(){
+const inp = document.getElementById(‘todo-inp’);
+const text = inp.value.trim();
+if(!text || !curK) return;
+if(!GD[curK].tasks) GD[curK].tasks = [];
+GD[curK].tasks.push({t:text, d:false});
+inp.value = ‘’;
+renderTodosM(curK);
+renderGrid();
+}
+function togTodoM(k,i){ GD[k].tasks[i].d=!GD[k].tasks[i].d; renderTodosM(k); renderGrid(); }
+function delTodoM(k,i){ GD[k].tasks.splice(i,1); renderTodosM(k); renderGrid(); }
+
+// ── Section picker ──
+function toggleSecPicker(){
+document.getElementById(‘sec-picker’).classList.toggle(‘open’);
+}
+function addSection(type){
+document.getElementById(‘sec-picker’).classList.remove(‘open’);
+const g = GD[curK]; if(!g) return;
+if(!g.sections) g.sections = [];
+if(g.sections.find(s=>s.type===type)){toast(‘Zaten ekli’); return;}
+g.sections.push({type, open:true});
+renderDynSections(g);
+renderGrid();
+toast({draw:‘✏️’,mind:‘🧠’,flow:‘🔀’,table:‘📊’}[type]+’ Eklendi’);
+}
+function renderDynSections(g){
+const cont = document.getElementById(‘dyn-sections’);
+cont.innerHTML = ‘’;
+const titles = {draw:‘✏️ Çizim’, mind:‘🧠 Zihin Haritası’, flow:‘🔀 Akış Şeması’, table:‘📊 Tablo’};
+(g.sections||[]).forEach(sec=>{
+const div = document.createElement(‘div’);
+div.className = ‘acc-sec’;
+div.innerHTML = ` <div class="acc-hd" onclick="toggleDynSec('${sec.type}')"> <div class="acc-hd-title">${titles[sec.type]||sec.type}</div> <div style="display:flex;align-items:center;gap:8px"> <span onclick="removeSection('${sec.type}',event)" style="font-size:18px;color:#8E8E93;padding:0 4px">×</span> <span class="acc-arrow ${sec.open?'open':''}" id="darr-${sec.type}">▼</span> </div> </div> <div class="acc-bd ${sec.open?'open':''}" id="dbody-${sec.type}"> ${buildSecHTML(sec.type)} </div>`;
+cont.appendChild(div);
+if(sec.open){
+if(sec.type===‘draw’) setTimeout(initDraw,60);
+if(sec.type===‘table’) setTimeout(()=>initTable(curK),60);
+if(sec.type===‘flow’) setTimeout(()=>initFlow(curK),60);
+if(sec.type===‘mind’) setTimeout(()=>initMind(curK),60);
+}
+});
+}
+function toggleDynSec(type){
+const body = document.getElementById(‘dbody-’+type);
+const arr  = document.getElementById(‘darr-’+type);
+if(!body) return;
+const open = body.classList.contains(‘open’);
+body.classList.toggle(‘open’,!open);
+if(arr) arr.classList.toggle(‘open’,!open);
+const g = GD[curK];
+if(g&&g.sections){const s=g.sections.find(x=>x.type===type);if(s)s.open=!open;}
+if(!open && type===‘draw’) setTimeout(initDraw,60);
+}
+function removeSection(type,e){
+e.stopPropagation();
+const g = GD[curK];
+if(g) g.sections = g.sections.filter(s=>s.type!==type);
+renderDynSections(g); renderGrid();
+}
+function buildSecHTML(type){
+if(type===‘draw’) return `<div class="draw-tools"><button class="draw-tool active" onclick="setDrawTool('pen',this)">🖊 Kalem</button><button class="draw-tool" onclick="setDrawTool('erase',this)">🧹 Sil</button><button class="draw-tool" onclick="clearCanvas()">🗑</button><input type="color" id="pen-color" value="#1C1C1E" style="width:28px;height:28px;border-radius:6px;border:none;cursor:pointer"><input type="range" id="pen-size" min="1" max="20" value="3" style="width:60px"></div><canvas id="draw-cv" style="width:100%;height:220px;background:#fff;border-radius:12px;touch-action:none;display:block"></canvas>`;
+if(type===‘mind’) return `<div class="draw-tools"><button class="draw-tool active" onclick="setMindTool('add',this)">＋ Ekle</button><button class="draw-tool" onclick="setMindTool('connect',this)">🔗 Bağla</button><button class="draw-tool" onclick="setMindTool('delete',this)">🗑 Sil</button></div><svg id="mind-svg" style="width:100%;height:240px;background:#fff;border-radius:12px;display:block" onclick="mindClick(event)"></svg>`;
+if(type===‘flow’) return `<div class="draw-tools"><button class="draw-tool" onclick="addFlowStep()">＋ Adım</button><button class="draw-tool" onclick="aiFlowGen()">🤖 AI</button></div><div id="flow-wrap" style="background:#fff;border-radius:12px;padding:12px;min-height:80px"></div>`;
+if(type===‘table’) return `<div class="draw-tools"><button class="draw-tool" onclick="addTableRow()">＋ Satır</button><button class="draw-tool" onclick="addTableCol()">＋ Sütun</button></div><div id="tbl-wrap" style="background:#fff;border-radius:12px;overflow:auto"></div>`;
+return ‘’;
+}
+
+// ── Draw ──
+let _drawCtx=null,_drawing=false,_drawTool=‘pen’;
+function initDraw(){
+const cv=document.getElementById(‘draw-cv’); if(!cv||cv._init) return; cv._init=true;
+cv.width=cv.offsetWidth; cv.height=220;
+_drawCtx=cv.getContext(‘2d’);
+cv.addEventListener(‘touchstart’,e=>{e.preventDefault();_drawing=true;const t=e.touches[0],r=cv.getBoundingClientRect();_drawCtx.beginPath();_drawCtx.moveTo(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+cv.addEventListener(‘touchmove’,e=>{e.preventDefault();if(!_drawing)return;const t=e.touches[0],r=cv.getBoundingClientRect();if(_drawTool===‘erase’){_drawCtx.clearRect(t.clientX-r.left-12,t.clientY-r.top-12,24,24);}else{_drawCtx.lineTo(t.clientX-r.left,t.clientY-r.top);_drawCtx.strokeStyle=document.getElementById(‘pen-color’).value;_drawCtx.lineWidth=document.getElementById(‘pen-size’).value;_drawCtx.lineCap=‘round’;_drawCtx.stroke();}},{passive:false});
+cv.addEventListener(‘touchend’,()=>{_drawing=false;});
+}
+function setDrawTool(t,el){_drawTool=t;document.querySelectorAll(’#dbody-draw .draw-tool’).forEach(b=>b.classList.remove(‘active’));el.classList.add(‘active’);}
+function clearCanvas(){if(_drawCtx){const cv=document.getElementById(‘draw-cv’);_drawCtx.clearRect(0,0,cv.width,cv.height);}}
+
+// ── Mind Map ──
+let _mTool=‘add’,_mNodes=[],_mEdges=[],_mFrom=null;
+function initMind(k){const g=GD[k];_mNodes=(g.mindData&&g.mindData.nodes)||[{id:1,x:140,y:120,text:g.title||‘Ana’}];_mEdges=(g.mindData&&g.mindData.edges)||[];renderMind();}
+function renderMind(){
+const svg=document.getElementById(‘mind-svg’);if(!svg)return;
+svg.innerHTML=’’;
+_mEdges.forEach(e=>{const a=_mNodes.find(n=>n.id===e.from),b=_mNodes.find(n=>n.id===e.to);if(!a||!b)return;const l=document.createElementNS(‘http://www.w3.org/2000/svg’,‘line’);l.setAttribute(‘x1’,a.x);l.setAttribute(‘y1’,a.y);l.setAttribute(‘x2’,b.x);l.setAttribute(‘y2’,b.y);l.setAttribute(‘stroke’,’#C8C8D0’);l.setAttribute(‘stroke-width’,‘2’);svg.appendChild(l);});
+_mNodes.forEach(n=>{const g2=document.createElementNS(‘http://www.w3.org/2000/svg’,‘g’);g2.style.cursor=‘pointer’;const ci=document.createElementNS(‘http://www.w3.org/2000/svg’,‘circle’);ci.setAttribute(‘cx’,n.x);ci.setAttribute(‘cy’,n.y);ci.setAttribute(‘r’,28);ci.setAttribute(‘fill’,_mFrom===n.id?’#4A47E8’:’#E8E6E0’);ci.setAttribute(‘stroke’,’#C8C8D0’);ci.setAttribute(‘stroke-width’,‘2’);const tx=document.createElementNS(‘http://www.w3.org/2000/svg’,‘text’);tx.setAttribute(‘x’,n.x);tx.setAttribute(‘y’,n.y+4);tx.setAttribute(‘text-anchor’,‘middle’);tx.setAttribute(‘font-size’,‘10’);tx.setAttribute(‘fill’,’#1C1C1E’);tx.textContent=n.text.slice(0,8);g2.appendChild(ci);g2.appendChild(tx);g2.onclick=()=>mindNodeClick(n.id);svg.appendChild(g2);});
+}
+function mindClick(e){if(_mTool!==‘add’)return;const svg=document.getElementById(‘mind-svg’);const r=svg.getBoundingClientRect();const id=Date.now();const text=prompt(‘Düğüm adı:’,‘Yeni’);if(!text)return;_mNodes.push({id,x:e.clientX-r.left,y:e.clientY-r.top,text});if(_mNodes.length>1)_mEdges.push({from:_mNodes[_mNodes.length-2].id,to:id});saveMind();renderMind();}
+function mindNodeClick(id){if(_mTool===‘delete’){_mNodes=_mNodes.filter(n=>n.id!==id);_mEdges=_mEdges.filter(e=>e.from!==id&&e.to!==id);saveMind();renderMind();return;}if(_mTool===‘connect’){if(!_mFrom){_mFrom=id;}else{_mEdges.push({from:_mFrom,to:id});_mFrom=null;}renderMind();}}
+function setMindTool(t,el){_mTool=t;_mFrom=null;document.querySelectorAll(’#dbody-mind .draw-tool’).forEach(b=>b.classList.remove(‘active’));el.classList.add(‘active’);}
+function saveMind(){const g=GD[curK];if(g)g.mindData={nodes:_mNodes,edges:_mEdges};}
+
+// ── Flow ──
+function initFlow(k){const g=GD[k];if(!g.flowSteps||!g.flowSteps.length)g.flowSteps=[{id:1,text:‘Başlangıç’,type:‘start’},{id:2,text:‘Adım 1’,type:‘step’},{id:3,text:‘Bitiş’,type:‘end’}];renderFlow(g);}
+function renderFlow(g){const w=document.getElementById(‘flow-wrap’);if(!w)return;const cols={start:’#28A870’,end:’#D04040’,step:’#4A47E8’};w.innerHTML=’’;g.flowSteps.forEach((s,i)=>{const d=document.createElement(‘div’);d.style.cssText=‘display:flex;flex-direction:column;align-items:center’;d.innerHTML=`<div style="background:${cols[s.type]||'#4A47E8'};color:#fff;border-radius:${s.type==='start'||s.type==='end'?'20px':'8px'};padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;min-width:100px;text-align:center" onclick="editFlowStep(${i})">${s.text}</div>${i<g.flowSteps.length-1?'<div style="width:2px;height:14px;background:#C8C8D0"></div>':''}`;w.appendChild(d);});}
+function addFlowStep(){const g=GD[curK];if(!g)return;const t=prompt(‘Adım adı:’,‘Yeni Adım’);if(!t)return;const last=g.flowSteps.pop();g.flowSteps.push({id:Date.now(),text:t,type:‘step’});g.flowSteps.push(last);renderFlow(g);}
+function editFlowStep(i){const g=GD[curK];const t=prompt(‘Adım:’,g.flowSteps[i].text);if(t){g.flowSteps[i].text=t;renderFlow(g);}}
+async function aiFlowGen(){const g=GD[curK];toast(‘🤖 AI…’);try{const r=await fetch(‘https://api.anthropic.com/v1/messages’,{method:‘POST’,headers:{‘Content-Type’:‘application/json’},body:JSON.stringify({model:‘claude-sonnet-4-20250514’,max_tokens:200,messages:[{role:‘user’,content:`${g.title} için 4 akış adımı, sadece virgülle listele:`}]})});const d=await r.json();const steps=d.content[0].text.split(’,’).map(s=>s.trim()).filter(Boolean);const last=g.flowSteps[g.flowSteps.length-1];g.flowSteps=[g.flowSteps[0],…steps.map((s,i2)=>({id:Date.now()+i2,text:s,type:‘step’})),last];renderFlow(g);toast(‘✅ Akış hazır’);}catch{toast(‘⚠️ AI hatası’);}}
+
+// ── Table ──
+function initTable(k){const g=GD[k];if(!g.tableData)g.tableData={rows:4,cols:3,data:{}};renderTable(g);}
+function renderTable(g){const w=document.getElementById(‘tbl-wrap’);if(!w)return;const{rows,cols,data}=g.tableData;let h=’<table style="border-collapse:collapse;min-width:100%;font-size:11px"><thead><tr><th style="border:1px solid rgba(0,0,0,.08);padding:6px 8px;background:rgba(74,71,232,.06);font-size:10px">#</th>’;for(let c2=0;c2<cols;c2++)h+=`<th contenteditable="true" style="border:1px solid rgba(0,0,0,.08);padding:6px 8px;min-width:70px;font-weight:600">${data['h'+c2]||'Sütun '+(c2+1)}</th>`;h+=’</tr></thead><tbody>’;for(let r=0;r<rows;r++){h+=`<tr><td style="border:1px solid rgba(0,0,0,.08);padding:5px 8px;color:#8E8E93;font-size:9px">${r+1}</td>`;for(let c2=0;c2<cols;c2++)h+=`<td contenteditable="true" oninput="tblInput('${g.key||curK}',${r},${c2},this.textContent)" style="border:1px solid rgba(0,0,0,.08);padding:5px 8px">${data[r+'_'+c2]||''}</td>`;h+=’</tr>’;}h+=’</tbody></table>’;w.innerHTML=h;}
+function tblInput(k,r,c2,v){const g=GD[k];if(g&&g.tableData)g.tableData.data[r+’_’+c2]=v;}
+function addTableRow(){const g=GD[curK];if(g&&g.tableData){g.tableData.rows++;renderTable(g);}}
+function addTableCol(){const g=GD[curK];if(g&&g.tableData){g.tableData.cols++;renderTable(g);}}
+
+// ── AI Chat ──
+async function sendAI(){
+const inp=document.getElementById(‘ai-inp’);
+const msg=inp.value.trim(); if(!msg) return;
+inp.value=’’; addAIMsg(‘user’,msg);
+addAIMsg(‘ai’,’…’, true);
+const g=GD[curK]||{};
+try{
+const r=await fetch(‘https://api.anthropic.com/v1/messages’,{
+method:‘POST’,
+headers:{‘Content-Type’:‘application/json’},
+body:JSON.stringify({
+model:‘claude-sonnet-4-20250514’,
+max_tokens:500,
+messages:[{role:‘user’,content:`Sen INNER uygulamasında bir görev asistanısın. Grid: “${g.title||’’}”. Görevler: ${(g.tasks||[]).map(t=>(t.d?’[✓] ‘:’’)+t.t).join(’, ’)||‘yok’}. Not: ${g.note||‘yok’}.
+
+Kullanıcı sorusu: ${msg}`}]
+})
+});
+const d=await r.json();
+removeLastAIMsg();
+addAIMsg(‘ai’, d.content?.[0]?.text || ‘⚠️ Yanıt alınamadı.’);
+}catch(err){
+removeLastAIMsg();
+addAIMsg(‘ai’,’⚠️ Bağlantı hatası: ’+err.message);
+}
+}
+function removeLastAIMsg(){
+const el=document.getElementById(‘ai-temp-msg’);
+if(el) el.remove();
+}
+function addAIMsg(role,text){
+const log=document.getElementById(‘ai-log’);
+const d=document.createElement(‘div’);
+d.className=’ai-msg ’+role;
+d.textContent=text;
+log.appendChild(d);
+log.scrollTop=log.scrollHeight;
+}
+
+// ── Toast ──
+function toast(msg){
+const el=document.getElementById(‘tst’);
+if(!el)return;
+el.textContent=msg;
+el.classList.add(‘on’);
+clearTimeout(window._tt);
+window._tt=setTimeout(()=>el.classList.remove(‘on’),2500);
+}
+
+function updateShelfBadge(){
+const b = document.getElementById(‘shelf-badge’);
+if(b){ b.style.display = shelfKeys.length>0?‘flex’:‘none’; b.textContent = shelfKeys.length; }
+}
+
+// ═══════════════════════════════════════════
+// PAGE SYSTEM
+// ═══════════════════════════════════════════
+// ─── Calendar Popup ───
+function openCal(){
+const overlay = document.getElementById(‘cal-overlay’);
+const popup = document.getElementById(‘cal-popup’);
+overlay.style.pointerEvents = ‘all’;
+overlay.style.background = ‘rgba(0,0,0,.3)’;
+popup.style.transform = ‘scale(1) translateY(0)’;
+popup.style.opacity = ‘1’;
+renderCalPopup();
+}
+function closeCal(){
+const overlay = document.getElementById(‘cal-overlay’);
+const popup = document.getElementById(‘cal-popup’);
+overlay.style.pointerEvents = ‘none’;
+overlay.style.background = ‘rgba(0,0,0,0)’;
+popup.style.transform = ‘scale(.9) translateY(-10px)’;
+popup.style.opacity = ‘0’;
+}
+function renderCalPopup(){
+const el = document.getElementById(‘cal-content’);
+if(!el) return;
+const today = new Date();
+const days = [‘Paz’,‘Pzt’,‘Sal’,‘Çar’,‘Per’,‘Cum’,‘Cmt’];
+const months = [‘Oca’,‘Şub’,‘Mar’,‘Nis’,‘May’,‘Haz’,‘Tem’,‘Ağu’,‘Eyl’,‘Eki’,‘Kas’,‘Ara’];
+let html = ‘’;
+for(let d=0;d<7;d++){
+const date = new Date(today);
+date.setDate(today.getDate()+d);
+const label = d===0?‘Bugün’:d===1?‘Yarın’:(days[date.getDay()]+’ ‘+date.getDate()+’ ‘+months[date.getMonth()]);
+const tasks = [];
+Object.entries(GD).forEach(([k,g])=>{
+(g.tasks||[]).filter(t=>!t.d).slice(0,d===0?5:2).forEach(t=>{
+tasks.push({title:g.title, task:t.t, col:GCOLS[k]||’#888’, key:k});
+});
+});
+if(tasks.length===0 && d>1) continue;
+html += `<div style="padding:10px 18px 4px"> <div style="font-size:11px;font-weight:700;color:#AAAAAA;letter-spacing:.04em;margin-bottom:6px">${label.toUpperCase()}</div> ${tasks.length>0 ? tasks.map(t=>`
+<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F5F5F5;cursor:pointer" onclick="closeCal();openM('${t.key}')">
+<div style="width:8px;height:8px;border-radius:50%;background:${t.col};flex-shrink:0"></div>
+<div style="flex:1">
+<div style="font-size:13px;font-weight:500;color:#1A1A1E">${t.task}</div>
+<div style="font-size:10px;color:#AAAAAA;margin-top:1px">${t.title}</div>
+</div>
+</div>`).join('') : '<div style="font-size:12px;color:#CCCCCC;padding:6px 0">Görev yok</div>'} </div>`;
+}
+el.innerHTML = html || ‘<div style="padding:24px;text-align:center;color:#ccc">Görev bulunamadı</div>’;
+}
+
+// ─── Settings Drawer ───
+function openSettings(){
+document.getElementById(‘settings-overlay’).classList.add(‘open’);
+document.getElementById(‘settings-drawer’).classList.add(‘open’);
+document.getElementById(‘app’).classList.add(‘drawer-open’);
+}
+function closeSettings(){
+document.getElementById(‘settings-overlay’).classList.remove(‘open’);
+document.getElementById(‘settings-drawer’).classList.remove(‘open’);
+document.getElementById(‘app’).classList.remove(‘drawer-open’);
+}
+
+// ─── Grid Long-press Menu ───
+function showGridMenu(item, el){
+hideGridMenu();
+const rect = el.getBoundingClientRect();
+const fromRight = window.innerWidth - rect.right;
+const menu = document.createElement(‘div’);
+menu.id = ‘grid-ctx-menu’;
+menu.style.cssText = `position:fixed; top:${Math.min(rect.bottom + 4, window.innerHeight - 220)}px; right:${Math.max(fromRight - 10, 8)}px; z-index:500; display:flex;flex-direction:column;gap:4px; animation:ctxIn .2s cubic-bezier(.34,1.3,.64,1);`;
+
+const btns = [
+{ic:‘✏️’, label:‘Düzenle’,   fn:()=>{ hideGridMenu(); toggleEdit(); openM(item.key); }},
+{ic:‘🎨’, label:‘Renk’,      fn:()=>{ hideGridMenu(); openColorPicker(item.key); }},
+{ic:‘📚’, label:‘Rafa At’,   fn:()=>{ hideGridMenu(); shelfItem(item.key); }},
+{ic:‘🔒’, label:GD[item.key]?.st===‘bloke’?‘Aktif Yap’:‘Bloke Et’, fn:()=>{ hideGridMenu(); toggleStatus(item.key); }},
+{ic:‘🗑’, label:‘Sil’,       fn:()=>{ hideGridMenu(); deleteGrid(item.key); }, danger:true},
+];
+
+btns.forEach(b=>{
+const btn = document.createElement(‘div’);
+btn.style.cssText = `display:flex;align-items:center;gap:6px; background:rgba(255,255,255,.96); backdrop-filter:blur(8px); color:${b.danger?'#E03030':'#1A1A1E'}; border-radius:10px;padding:8px 12px; font-size:12px;font-weight:600; box-shadow:0 2px 10px rgba(0,0,0,.12); cursor:pointer;white-space:nowrap; border:1px solid rgba(0,0,0,.06);`;
+btn.innerHTML = `<span>${b.ic}</span><span>${b.label}</span>`;
+btn.ontouchstart = (e)=>{ e.stopPropagation(); b.fn(); };
+btn.onclick = (e)=>{ e.stopPropagation(); b.fn(); };
+menu.appendChild(btn);
+});
+
+document.body.appendChild(menu);
+
+// Dışarı dokunursa kapat
+setTimeout(()=>{
+document.addEventListener(‘touchstart’, hideGridMenu, {once:true, capture:true});
+}, 200);
+}
+
+function hideGridMenu(e){
+const m = document.getElementById(‘grid-ctx-menu’);
+if(m) m.remove();
+}
+
+function openColorPicker(key){
+const colors = [
+‘#7A9DBF’,’#7AAF7A’,’#C8925A’,’#C87B5A’,
+‘#C8AA58’,’#5FA8A0’,’#A0A090’,’#9B7FBF’,
+‘#BF7F9B’,’#7FB FBF’,’#5B8DD9’,’#E8921A’,
+].filter(x=>!x.includes(’ ’));
+
+// Inline renk seçici göster
+const el = document.getElementById(‘gc-’+key);
+if(!el) return;
+
+const picker = document.createElement(‘div’);
+picker.id = ‘color-picker-pop’;
+picker.style.cssText = `position:absolute;bottom:8px;left:8px;right:8px;z-index:60; background:rgba(255,255,255,.97);border-radius:12px; padding:10px;display:flex;flex-wrap:wrap;gap:6px; box-shadow:0 4px 20px rgba(0,0,0,.15); animation:ctxIn .18s cubic-bezier(.34,1.3,.64,1);`;
+colors.forEach(col=>{
+const sw = document.createElement(‘div’);
+sw.style.cssText = `width:28px;height:28px;border-radius:8px;background:${col};cursor:pointer;border:2px solid ${GCOLS[key]===col?'#fff':'transparent'};box-shadow:0 1px 3px rgba(0,0,0,.2);`;
+sw.ontouchstart = (e)=>{
+e.stopPropagation();
+GCOLS[key] = col;
+document.getElementById(‘color-picker-pop’)?.remove();
+renderGrid();
+};
+picker.appendChild(sw);
+});
+
+el.appendChild(picker);
+setTimeout(()=>{
+document.addEventListener(‘touchstart’, ()=>document.getElementById(‘color-picker-pop’)?.remove(), {once:true, capture:true});
+}, 100);
+}
+
+// ─── View Navigation ───
+const VIEW_ORDER = [‘raf’,‘kisisel’,‘work’,‘butce’];
+let _currentView = 1; // start on kişisel
+
+function navTo(idx){
+const track = document.getElementById(‘views-track’);
+if(!track) return;
+_currentView = idx;
+track.style.transform = `translateX(calc(-${idx} * 25%))`;
+// Update nav active states
+VIEW_ORDER.forEach((v,i)=>{
+const btn = document.getElementById(‘bni-’+v);
+if(btn) btn.classList.toggle(‘act’, i===idx);
+});
+// Render content if needed
+if(idx===0) renderRaf();
+}
+
+// Page stack for back navigation
+let _pageStack = [];
+
+function openPage(id){
+const p = document.getElementById(id);
+if(!p) return;
+
+// Push current visible page back slightly
+const current = _pageStack[_pageStack.length-1];
+if(current){
+const cp = document.getElementById(current);
+if(cp){ cp.classList.remove(‘show’); cp.classList.add(‘back’); }
+}
+
+_pageStack.push(id);
+p.classList.remove(‘back’);
+// Force reflow then animate in
+requestAnimationFrame(()=>{
+requestAnimationFrame(()=>{ p.classList.add(‘show’); });
+});
+
+if(id===‘p-raf’) renderRaf();
+if(id===‘p-takvim’) renderTakvim();
+}
+
+function closePage(id){
+const p = document.getElementById(id);
+if(!p) return;
+
+p.classList.remove(‘show’);
+_pageStack = _pageStack.filter(k=>k!==id);
+
+// Restore previous page
+const prev = _pageStack[_pageStack.length-1];
+if(prev){
+const pp = document.getElementById(prev);
+if(pp){ pp.classList.remove(‘back’); pp.classList.add(‘show’); }
+}
+}
+
+function closeAllPages(){
+document.querySelectorAll(’.page’).forEach(p=>{
+p.classList.remove(‘show’,‘back’);
+});
+_pageStack = [];
+}
+
+let rafItems = [];
+
+function addNewGrid(){
+const keys = Object.keys(GD);
+const newKey = ‘grid_’ + Date.now();
+const colors = [’#7A9DBF’,’#7AAF7A’,’#C8925A’,’#C87B5A’,’#C8AA58’,’#5FA8A0’,’#A0A090’,’#9B7FBF’,’#BF7F9B’];
+const col = colors[keys.length % colors.length];
+GCOLS[newKey] = col;
+GD[newKey] = {title:‘Yeni Grid’, pri:‘P2’, st:‘aktif’, sc:0, note:’’, tasks:[]};
+
+// Boş alan bul ya da sağ alta ekle
+const wrap = document.getElementById(‘grid-wrap’);
+const W = wrap ? wrap.offsetWidth : 390;
+const H = wrap ? wrap.offsetHeight : 500;
+const sz = Math.round(Math.min(W,H) * 0.28);
+ITEMS.push({key:newKey, x:W-sz-6, y:H-sz-6, w:sz, h:sz});
+
+renderGrid();
+setTimeout(()=>openM(newKey), 100);
+toast(‘➕ Yeni grid eklendi’);
+}
+function addToRaf(key){
+if(!rafItems.find(r=>r.key===key)) rafItems.push({key, addedAt:Date.now()});
+}
+function rafTab(el, tabId){
+document.querySelectorAll(’#raf-tabs .dtab’).forEach(t=>t.classList.remove(‘on’));
+el.classList.add(‘on’);
+document.querySelectorAll(’#p-raf .rlist’).forEach(l=>l.style.display=‘none’);
+const tab = document.getElementById(tabId);
+if(tab) tab.style.display=‘flex’;
+}
+function renderRaf(){
+const list = document.getElementById(‘rt-bk’);
+if(!list) return;
+const count = document.getElementById(‘raf-count’);
+if(count) count.textContent = shelfKeys.length + ’ bekleyen’;
+if(shelfKeys.length === 0){
+list.innerHTML = ‘<div style="padding:32px;text-align:center;color:#aaa;font-size:13px">Rafta grid yok</div>’;
+return;
+}
+list.innerHTML = shelfKeys.map(key=>{
+const g = GD[key]; if(!g) return ‘’;
+const col = GCOLS[key]||’#888’;
+const tot = (g.tasks||[]).length, dn=(g.tasks||[]).filter(t=>t.d).length;
+return `<div class="rc"> <div class="rci" style="background:${col}30"><div style="width:18px;height:18px;border-radius:4px;background:${col}"></div></div> <div class="rcb"> <div class="rct">${g.title}</div> <div class="rcd">${g.pri} · ${tot>0?dn+'/'+tot+' görev':'Görev yok'}</div> <div class="rcm"> <div class="rca" onclick="rafGeriAl('${key}')">← Geri Al</div> <div class="rca" onclick="rafSil('${key}')" style="color:#E04040;border-color:rgba(224,64,64,.2);background:rgba(224,64,64,.06)">Sil</div> </div> </div> </div>`;
+}).join(’’);
+}
+function rafGeriAl(key){
+shelfKeys = shelfKeys.filter(k=>k!==key);
+rafItems = rafItems.filter(r=>r.key!==key);
+updateShelfBadge(); renderGrid(); renderRaf();
+toast(‘↩ ’ + (GD[key]?.title||key) + ’ geri alındı’);
+}
+function rafSil(key){
+shelfKeys = shelfKeys.filter(k=>k!==key);
+rafItems = rafItems.filter(r=>r.key!==key);
+ITEMS = ITEMS.filter(i=>i.key!==key);
+delete GD[key];
+updateShelfBadge(); renderGrid(); renderRaf();
+toast(‘🗑 Silindi’);
+}
+function renderTakvim(){
+const wrap = document.getElementById(‘takvim-wrap’);
+if(!wrap) return;
+const days=[‘Pazar’,‘Pazartesi’,‘Salı’,‘Çarşamba’,‘Perşembe’,‘Cuma’,‘Cumartesi’];
+const months=[‘Ocak’,‘Şubat’,‘Mart’,‘Nisan’,‘Mayıs’,‘Haziran’,‘Temmuz’,‘Ağustos’,‘Eylül’,‘Ekim’,‘Kasım’,‘Aralık’];
+const today=new Date();
+let html=’’;
+for(let d=0;d<7;d++){
+const date=new Date(today); date.setDate(today.getDate()+d);
+const label=d===0?‘Bugün’:d===1?‘Yarın’:days[date.getDay()]+’, ‘+date.getDate()+’ ‘+months[date.getMonth()];
+const tasks=[];
+Object.entries(GD).forEach(([k,g])=>{
+if(d===0)(g.tasks||[]).filter(t=>!t.d).forEach(t=>tasks.push({title:g.title,task:t.t,col:GCOLS[k]||’#888’}));
+});
+if(tasks.length===0&&d>2) continue;
+html+=`<div class="cal-day"><div class="cdh">${label}</div> ${tasks.length>0?tasks.map(t=>`<div class="ci2"><div class="cdot" style="background:${t.col}"></div><div class="ctt">${t.task}</div><div class="ctm">${t.title}</div></div>`).join(''):'<div class="ci2" style="opacity:.4"><div class="ctt" style="font-size:11px">Görev yok</div></div>'} </div>`;
+}
+wrap.innerHTML=html||’<div style="padding:32px;text-align:center;color:#aaa">Yaklaşan görev yok</div>’;
+}
+function toggleStatus(key){
+const g=GD[key]; if(!g) return;
+g.st=g.st===‘aktif’?‘bloke’:‘aktif’;
+renderGrid();
+toast(g.st===‘aktif’?‘✅ Aktif’:‘🔒 Bloke’);
+}
+function deleteGrid(key){
+shelfKeys=shelfKeys.filter(k=>k!==key);
+ITEMS=ITEMS.filter(i=>i.key!==key);
+delete GD[key];
+renderGrid();
+toast(‘🗑 Silindi’);
+}
+
+// ═══════════════════════════════════════════
+// HIZLI EKLE
+// ═══════════════════════════════════════════
+let _qaType = ‘todo’;
+let _qaGrid = null;
+
+function openQuickAdd(){
+// Grid chip’leri oluştur
+const row = document.getElementById(‘qa-grid-row’);
+const keys = Object.keys(GD).filter(k => !shelfKeys.includes(k));
+_qaGrid = keys[0] || null;
+row.innerHTML = keys.map(k => {
+const g = GD[k];
+const col = GCOLS[k] || ‘#888’;
+return `<div class="qa-grid-chip ${k===_qaGrid?'sel':''}"  style="background:${col}"  data-key="${k}" onclick="qaSelectGrid(this,'${k}')"> ${g.title} </div>`;
+}).join(’’);
+
+const overlay = document.getElementById(‘quick-add-overlay’);
+overlay.classList.add(‘open’);
+setTimeout(()=>document.getElementById(‘qa-input’).focus(), 350);
+}
+
+function closeQuickAdd(){
+document.getElementById(‘quick-add-overlay’).classList.remove(‘open’);
+document.getElementById(‘qa-input’).value = ‘’;
+}
+
+function qaSetType(el, type){
+_qaType = type;
+document.querySelectorAll(’.qa-tab’).forEach(t=>t.classList.remove(‘on’));
+el.classList.add(‘on’);
+document.getElementById(‘qa-input’).placeholder =
+type === ‘todo’ ? ‘Ne yapmak istiyorsun?’ : ‘Aklındaki not…’;
+}
+
+function qaSelectGrid(el, key){
+_qaGrid = key;
+document.querySelectorAll(’.qa-grid-chip’).forEach(c=>c.classList.remove(‘sel’));
+el.classList.add(‘sel’);
+}
+
+function submitQuickAdd(){
+const val = document.getElementById(‘qa-input’).value.trim();
+if(!val) return;
+if(!_qaGrid || !GD[_qaGrid]) { toast(‘⚠️ Bir grid seç’); return; }
+
+if(_qaType === ‘todo’){
+if(!GD[_qaGrid].tasks) GD[_qaGrid].tasks = [];
+GD[_qaGrid].tasks.push({t: val, d: false});
+toast(’✅ ’ + GD[_qaGrid].title + “’e eklendi”);
+} else {
+const existing = GD[_qaGrid].note || ‘’;
+GD[_qaGrid].note = existing ? existing + ‘\n’ + val : val;
+toast(’📝 Not eklendi → ’ + GD[_qaGrid].title);
+}
+
+document.getElementById(‘qa-input’).value = ‘’;
+renderGrid();
+closeQuickAdd();
+}
+// ═══════════════════════════════════════════
+// STARTUP
+// ═══════════════════════════════════════════
+function _init(){
+const wrap = document.getElementById(‘grid-wrap’);
+if(!wrap || wrap.offsetWidth === 0 || wrap.offsetHeight === 0){ setTimeout(_init, 50); return; }
+loadData();
+initLayout();
+// Kaydedilmiş layout varsa px’e çevir
+if(_savedLayout && _savedLayout.length > 0){
+const W = wrap.offsetWidth, H = wrap.offsetHeight;
+// _savedLayout px cinsinden (xp,yp,wp,hp = px)
+ITEMS = _savedLayout.map(i=>({key:i.key, x:i.xp, y:i.yp, w:i.wp, h:i.hp}));
+_savedLayout = null;
+}
+renderGrid();
+updateShelfBadge();
+navTo(1);
+loadDataAsync(); // IndexedDB async yükleme (localStorage’dan daha güncel olabilir)
+new ResizeObserver(()=>{ initLayout(); renderGrid(); }).observe(wrap);
+}
+if(document.readyState === ‘loading’){
+document.addEventListener(‘DOMContentLoaded’, _init);
+} else {
+_init();
+}
+
+</script>
+
+<!-- ── Settings Drawer ── -->
+
+<div id="settings-overlay" onclick="closeSettings()"></div>
+<div id="settings-drawer">
+
+  <div class="sd-head">
+    <div class="sd-title">AYARLAR</div>
+    <div class="sd-sort" onclick="closeSettings()">✕</div>
+  </div>
+
+  <div class="sd-search">
+    <span style="font-size:14px;color:#BBBBBB">🔍</span>
+    <input type="text" placeholder="Ayarlarda ara..." />
+  </div>
+
+  <div class="sd-scroll">
+
+```
+<!-- Kişiselleştirme -->
+<div class="sd-section">
+  <div class="sd-sec-label">Kişiselleştirme</div>
+  <div class="sd-row">
+    <div class="sd-item" onclick="toast('🎨 Tema')">
+      <div class="sd-ic" style="background:#EEF2FF">🎨</div>
+      <div class="sd-lbl">Tema</div>
+      <div class="sd-val">Açık</div>
+      <div class="sd-arr">›</div>
+    </div>
+    <div class="sd-item" onclick="toast('🏷 Grid Renkleri')">
+      <div class="sd-ic" style="background:#F0FFF4">🏷</div>
+      <div class="sd-lbl">Grid Renkleri</div>
+      <div class="sd-arr">›</div>
+    </div>
+    <div class="sd-item">
+      <div class="sd-ic" style="background:#FFF7ED">🔔</div>
+      <div class="sd-lbl">Bildirimler</div>
+      <div class="sd-toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Hesap -->
+<div class="sd-section">
+  <div class="sd-sec-label">Hesap</div>
+  <div class="sd-row">
+    <div class="sd-item" onclick="navTo(1);closeSettings();setTimeout(()=>openPage('p-profil'),350)">
+      <div class="sd-ic" style="background:#F0F4FF">👤</div>
+      <div class="sd-lbl">Profil</div>
+      <div class="sd-arr">›</div>
+    </div>
+    <div class="sd-item" onclick="toast('🔒 Gizlilik')">
+      <div class="sd-ic" style="background:#FFF0F0">🔒</div>
+      <div class="sd-lbl">Gizlilik & Güvenlik</div>
+      <div class="sd-arr">›</div>
+    </div>
+    <div class="sd-item" onclick="toast('☁️ Yedekleme')">
+      <div class="sd-ic" style="background:#F0FAFF">☁️</div>
+      <div class="sd-lbl">Yedekleme</div>
+      <div class="sd-val">Kapalı</div>
+      <div class="sd-arr">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- Uygulama -->
+<div class="sd-section">
+  <div class="sd-sec-label">Uygulama</div>
+  <div class="sd-row">
+    <div class="sd-item" onclick="toast('📥 İçe Aktar')">
+      <div class="sd-ic" style="background:#F5F0FF">📥</div>
+      <div class="sd-lbl">İçe Aktar</div>
+      <div class="sd-arr">›</div>
+    </div>
+    <div class="sd-item" onclick="toast('📤 Dışa Aktar')">
+      <div class="sd-ic" style="background:#F5F0FF">📤</div>
+      <div class="sd-lbl">Dışa Aktar</div>
+      <div class="sd-arr">›</div>
+    </div>
+    <div class="sd-item" onclick="clearData()" style="color:#E03030">🗑 Tüm Veriyi Sıfırla</div>
+    <div class="sd-item" onclick="toast('🗑 Son Silinenler')">
+      <div class="sd-ic" style="background:#FFF5F5">🗑</div>
+      <div class="sd-lbl">Son Silinenler</div>
+      <div class="sd-arr">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- Hakkında -->
+<div class="sd-section">
+  <div class="sd-sec-label">Hakkında</div>
+  <div class="sd-row">
+    <div class="sd-item" onclick="toast('❓ Yardım')">
+      <div class="sd-ic" style="background:#F0FFF4">❓</div>
+      <div class="sd-lbl">Yardım & Destek</div>
+      <div class="sd-arr">›</div>
+    </div>
+    <div class="sd-item" onclick="toast('🆕 v9.0')">
+      <div class="sd-ic" style="background:#FFFBF0">🆕</div>
+      <div class="sd-lbl">Sürüm Notları</div>
+      <div class="sd-val">v9.0</div>
+      <div class="sd-arr">›</div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <div class="sd-bottom">
+    <div class="sd-ver">INNER v9 · Kişisel Alan</div>
+    <button class="sd-upgrade" onclick="toast('🚀 Pro özellikler yakında!')">✦ PRO'YA GEÇ</button>
+  </div>
+
+</div>
+
+<!-- ── Grid Modal ── -->
+
+<div class="mbd" id="modal">
+  <div class="mbox">
+    <div class="mhd">
+      <div class="mhd-back" onclick="closeM()">←</div>
+      <input class="mtinp" id="mtitle" type="text" placeholder="Başlık..." onchange="if(curK&&GD[curK])GD[curK].title=this.value"/>
+      <div class="mhd-icons">
+        <div class="mhd-ic" id="m-pri-ic" onclick="cyclePri()">●</div>
+        <div class="mhd-ic close-ic" onclick="closeM()">✕</div>
+      </div>
+    </div>
+    <div class="mbody-scroll" id="modal-body">
+      <!-- Todo -->
+      <div class="acc-sec">
+        <div class="acc-hd" onclick="toggleAcc('todo')">
+          <div class="acc-hd-title">✅ Görevler</div>
+          <div class="acc-arrow open" id="acc-arr-todo">▼</div>
+        </div>
+        <div class="acc-bd open" id="acc-bd-todo">
+          <div id="todo-list"></div>
+          <div class="todo-add-row">
+            <input class="todo-inp" id="todo-inp" placeholder="Yeni görev..." onkeydown="if(event.key==='Enter')addTodoM()"/>
+            <button class="todo-btn" onclick="addTodoM()">+</button>
+          </div>
+        </div>
+      </div>
+      <!-- Note -->
+      <div class="acc-sec">
+        <div class="acc-hd" onclick="toggleAcc('note')">
+          <div class="acc-hd-title">📝 Not</div>
+          <div class="acc-arrow" id="acc-arr-note">▼</div>
+        </div>
+        <div class="acc-bd" id="acc-bd-note">
+          <textarea class="note-ta" id="note-ta" placeholder="Notlar..." rows="4"></textarea>
+        </div>
+      </div>
+      <!-- AI -->
+      <div class="acc-sec">
+        <div class="acc-hd" onclick="toggleAcc('ai')">
+          <div class="acc-hd-title">🤖 AI Asistan</div>
+          <div class="acc-arrow" id="acc-arr-ai">▼</div>
+        </div>
+        <div class="acc-bd" id="acc-bd-ai">
+          <div class="ai-log" id="ai-log"></div>
+          <div class="ai-add-row">
+            <input class="todo-inp" id="ai-inp" placeholder="Sor..." style="flex:1" onkeydown="if(event.key==='Enter')sendAI()"/>
+            <button class="todo-btn" onclick="sendAI()">→</button>
+          </div>
+        </div>
+      </div>
+      <div id="dyn-sections"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Calendar Popup ── -->
+
+<div id="cal-overlay" onclick="closeCal()" style="position:fixed;inset:0;z-index:350;background:rgba(0,0,0,0);pointer-events:none;transition:background .25s;display:flex;align-items:flex-start;justify-content:flex-end;padding:80px 12px 0;">
+  <div id="cal-popup" onclick="event.stopPropagation()" style="
+    background:#fff;border-radius:20px;width:88%;max-width:340px;
+    box-shadow:0 8px 40px rgba(0,0,0,.18);
+    transform:scale(.9) translateY(-10px);opacity:0;
+    transition:transform .25s cubic-bezier(.34,1.2,.64,1),opacity .25s;
+    overflow:hidden;max-height:70vh;display:flex;flex-direction:column;
+  ">
+    <div style="padding:16px 18px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F0F0F5;flex-shrink:0">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800">Bugün</div>
+      <div style="width:28px;height:28px;border-radius:50%;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer" onclick="closeCal()">✕</div>
+    </div>
+    <div id="cal-content" style="flex:1;overflow-y:auto;padding:10px 0"></div>
+  </div>
+</div>
+
+<!-- ── Hızlı Ekle Paneli ── -->
+
+<div id="quick-add-overlay" onclick="closeQuickAdd()">
+  <div id="quick-add-panel" onclick="event.stopPropagation()">
+    <div class="qa-handle"></div>
+    <div class="qa-tabs">
+      <div class="qa-tab on" onclick="qaSetType(this,'todo')">✅ Görev</div>
+      <div class="qa-tab" onclick="qaSetType(this,'note')">📝 Not</div>
+    </div>
+    <input class="qa-input" id="qa-input" placeholder="Ne yapmak istiyorsun?" 
+      onkeydown="if(event.key==='Enter')submitQuickAdd()"/>
+    <div class="qa-title" style="margin-top:14px">Hangi grid?</div>
+    <div class="qa-grid-row" id="qa-grid-row"></div>
+    <button class="qa-send" onclick="submitQuickAdd()">Ekle →</button>
+  </div>
+</div>
+</body>
+</html>
